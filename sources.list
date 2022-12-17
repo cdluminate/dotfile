@@ -1,0 +1,25 @@
+# American virtual machine
+deb http://debian.csail.mit.edu/debian/ stretch main contrib non-free
+deb http://debian.csail.mit.edu/debian/ stretch-updates main contrib non-free
+deb http://debian.csail.mit.edu/debian/ stretch-backports main contrib non-free
+
+# American virtual machine
+deb http://debian.csail.mit.edu/debian/ sid main contrib non-free
+
+# China
+deb https://mirrors.ustc.edu.cn/debian sid main contrib non-free
+deb-src https://mirrors.ustc.edu.cn/debian sid main contrib non-free
+deb https://mirrors.ustc.edu.cn/debian testing main contrib non-free
+deb-src https://mirrors.ustc.edu.cn/debian testing main contrib non-free
+deb https://mirrors.ustc.edu.cn/debian experimental main contrib non-free
+deb-src https://mirrors.ustc.edu.cn/debian experimental main contrib non-free
+
+deb https://mirrors.tuna.tsinghua.edu.cn/debian sid main contrib non-free
+deb-src https://mirrors.tuna.tsinghua.edu.cn/debian sid main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian testing main contrib non-free
+deb-src https://mirrors.tuna.tsinghua.edu.cn/debian testing main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian experimental main contrib non-free
+deb-src https://mirrors.tuna.tsinghua.edu.cn/debian experimental main contrib non-free
+
+# Generic
+deb http://deb.debian.org/debian sid main contrib non-free

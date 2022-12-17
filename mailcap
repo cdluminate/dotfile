@@ -1,0 +1,15 @@
+# $Id$
+
+image/gif;  feh %s
+image/jpg;  feh %s
+image/jpeg; feh %s
+image/png;  feh %s
+
+application/pgp-keys; pgp -f < %s ; copiousoutput
+application/pgp-signature; cat ; copiousoutput
+application/pdf; mupdf %s
+application/x-pdf; mupdf %s
+
+text/x-diff; cat ; copiousoutput
+text/x-patch; cat ; copiousoutput
+#text/html; pandoc -f html -t plain; copiousoutput;

@@ -1,0 +1,9 @@
+# Put this file to /etc/apt/preferences , see apt_preferences(5)
+
+Package: *
+Pin: release n=sid
+Pin-Priority: 100
+
+Package: *
+Pin: release n=experimental
+Pin-Priority: 200

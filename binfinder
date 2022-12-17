@@ -1,0 +1,12 @@
+#!/bin/sh
+# Automagic Program Finder
+# Example Usage:
+#  1. download Julia binary tarball and extract to ~/bin/julia-d386e40c17
+#  2. create a symlink to this script at ~/bin/julia
+#     $ cd ~/bin; ln -s ../withlinux/dotfile/binfiner julia
+# Works for Pypy, Julia
+set -e
+base=$HOME/bin
+progname=$(basename $0)
+test 1 -eq $(ls $base/$progname*/bin/$progname -1 | wc -l) || (echo "More than one $0 binaries found."; false)
+exec $base/$progname*/bin/$progname $@

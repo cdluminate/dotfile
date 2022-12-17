@@ -1,0 +1,94 @@
+#!/bin/sh
+# my simple wifi helper
+# reference: nmcli-examples wicd-cli iw iwconfig ip wpa_supplicant
+# three ways to connect to a wifi
+# 1. nmcli : network manager, requires systemd
+# 2. wicd  : no systemd dependency
+# 3. iw/iwconfig : low level, no WPA support
+# 4. wpa_supplicant : annoying
+# reference:
+#  https://wiki.archlinux.org/index.php/Network_configuration
+#  https://wiki.archlinux.org/index.php/Wireless_network_configuration#Manual_setup
+#  https://wiki.archlinux.org/index.php/NetworkManager
+#  https://wiki.archlinux.org/index.php/Wicd
+set -e
+
+# helper function
+scan () {
+	# $1: device, e.g. wlp3s0
+	sudo iw dev $1 scan
+	#/sbin/iwlist wlan0 scan | grep 'ESSID' | cut -d ':' -f 2 | sort | nl
+}
+wifilist () {
+	nmcli dev wifi list
+}
+wifilist_detail () {
+	nmcli -f in-use,device,active,ssid,bssid,mode,chan,rate,signal,bars,security dev wifi
+}
+general_status () {
+	nmcli dev
+	echo .
+	nmcli general status
+}
+wifi_connect () {
+	# $1: wifi ID
+	sudo nmcli -a connection up $@ 2>/dev/null || \
+		echo =\> No matching connection. Connecting ...; \
+		sudo nmcli -a dev wifi con $@
+	# first try to find a matching connection in profile.
+	# then try to connect the wifi specified by given information.
+	# If you are about to connect to a hidden wifi, try this:
+	# nmcli dev wifi con HIDDEN_NAME password PASSWORD hidden yes
+}
+wifi_disconnect () {
+	sudo nmcli device wifi disconnect
+}
+create_hotspot () {
+	sudo nmcli dev wifi hotspot ssid "StarBound" password fishx
+}
+wifi_rescan () {
+	sudo nmcli dev wifi rescan
+}
+wifi_off () {
+	sudo nmcli radio wifi off
+}
+wifi_on () {
+	sudo nmcli radio wifi on
+}
+
+manual_connect_without_NetworkManager () {
+	#1. check rfkill
+	sudo rfkill list
+	#2. bring up device
+	sudo ip link set dev wlp3s0 up
+	#3. scan
+	sudo iwlist wlp3s0 scan
+	#4. connect
+	# NOTE, these methods only works with none-security network or WEP network.
+	# Use wpa_supplicant to connect WPA and WPA2 networks.
+	sudo iwconfig wlp3s0 essid xxx # without password
+	sudo iwconfig wlp3s0 essid xxx key yyy # with password
+	sudo iw dev wlp3s0 connect xxx [key yyy] # use iw, with or without password
+	#5. dhcp
+	sudo dhclient wlp3s0 || sudo dhcpcd wlp3s0
+	#6. check status
+	sudo iw dev wlp3s0 link
+	sudo iwconfig wlp3s0
+}
+
+# main
+case $1 in
+	ls  ) wifilist;;
+	list) wifilist_detail;;
+	scan) scan $2;;
+	rescan) wifi_rescan;;
+	# con) # list connections
+	st  ) general_status;;
+	+   ) shift; wifi_connect $@;;
+	-   ) wifi_disconnect;;
+	x   ) create_hotspot;;
+	on  ) wifi_on;;
+	off ) wifi_off;;
+	tui ) nmtui;; # Network Manager Text User Interface
+	*   ) nmcli $@;;
+esac

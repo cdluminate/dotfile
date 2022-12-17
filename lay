@@ -1,0 +1,7 @@
+#!/bin/sh
+# My XKB layout switcher. Gnome just sucks.
+# https://wiki.archlinux.org/index.php?title=X_keyboard_layout&redirect=no
+set -e
+
+[ ! -z "$1" ] && setxkbmap -layout $1
+setxkbmap -print -verbose 10

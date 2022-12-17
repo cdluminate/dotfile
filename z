@@ -1,0 +1,73 @@
+#!/bin/sh -e
+# ZFS helper
+# Copyright (C) Mo Zhou
+
+Usage () {
+  cat << EOF
+$0 <shortcut> [pool]
+Shortcut:
+  -h            show help message
+  ls            list zpool and zfs
+  lss           list all snapshots
+  la            list all zpool and zfs
+  lm            list all zpool and zfs exluding autosnaps
+  st            show zpool status
+  check <pool>  scrub a pool
+  snap  <pool>  rotate snapshots for a pool
+  find          show zfs currently in use
+  hist  <pool>  dump history of a pool
+  io            verbose iostat with interval 1
+  all           show mounted zfs, list all zpool and zfs
+  -v            show zfs version
+EOF
+}
+
+mkhr () {
+  local char
+  if test -z "$1"; then
+    char='≡'
+  else
+    char=$1
+  fi
+  sudo true
+  /bin/echo -en "\x1b[1;32m"
+  for i in $(seq 0 78); do
+    printf "$char"
+  done
+  /bin/echo -e "\x1b[m"
+}
+
+if test -z "$1"; then
+  Usage; exit
+fi
+
+case "$1" in
+-h)
+  Usage; exit ;;
+ls)
+  mkhr; sudo zpool list | column -t ; mkhr ─; sudo zfs list -o mounted,name,refer,compressratio,encryption,mountpoint | column -t ; mkhr; exit ;;
+la)
+  mkhr; sudo zpool list -v | column -t ; mkhr ─; sudo zfs list -tall -o mounted,name,refer,compressratio,encryption,mountpoint | column -t ; mkhr; exit ;;
+lm)
+  mkhr; sudo zpool list -v | column -t ; mkhr ─; sudo zfs list -tall -o mounted,name,refer,compressratio,encryption,mountpoint | grep -v auto-snap | column -t ; mkhr; exit ;;
+st)
+  sudo zpool status -v;;
+check)
+  sudo zpool scrub $2 ;;
+snap)
+  sudo zfSnap -a 32d -r $2 ;;
+autosnap)
+  sudo zfSnap -a 32d -r $2; sudo zfSnap -d ;;
+find)
+  findmnt -t zfs ;;
+hist)
+  sudo zpool history $2 ;;
+io)
+  sudo zpool iostat -v 1 ;;
+all)
+  $0 find; $0 la ;;
+-v)
+  sudo zpool upgrade -v ;;
+*)
+  Usage; exit ;;
+esac

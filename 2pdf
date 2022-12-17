@@ -1,0 +1,83 @@
+#!/bin/sh
+# Any-to-pdf convertion helper via Pandoc
+# Copyright (C) 2018 Lumin <cdluminate@gmail.com>, MIT License
+set -e
+
+# terminal control seq ref: https://en.wikipedia.org/wiki/ANSI_escape_code
+
+Usage() {
+	echo "2pdf [options] SRC [DEST] [-- PANDOC_OPT]"
+	echo "where options can be:"
+	echo "    -2: use two column"
+	echo "    -t: add table of content"
+	echo "    -z: support chinese (for ReST)"
+	echo "    -m: use MinionPro font" # https://github.com/sebschub/FontPro
+	echo "    -i: use Times font instead of lmorden (default)"
+	echo "    -c: use Calligra font latex raw: {\\\calligra some text}"
+	echo "    -n: allow section numbering (pandoc -N)"
+	echo "    --: add pandoc opt, e.g. --toc-depth=x"
+	echo "    -x: use default options: -2 -t -n -m"
+}
+
+# dump the template to be modified
+template=$(mktemp)
+pandoc -Dlatex > $template
+
+# Arugument parse and parameter processing 
+LATEXOPT="-V geometry=margin=1in" # pdflatex
+for param in $@; do
+	case $param in
+		-2) shift; LATEXOPT="$LATEXOPT -V classoption=twocolumn" ;;
+		-t) shift; LATEXOPT="$LATEXOPT --toc -V toccolor=magenta" ;;
+		-z) shift; LATEXOPT="$LATEXOPT --template=$template"
+			# wisely fix the template for chinese character
+			sed -i \
+				-e '/documentclass/a \\\usepackage{CJKutf8}\n\\\usepackage{CJKulem}' \
+				-e '/begin{document}/a \\\begin{CJK}{UTF8}{gkai}' \
+				-e '/end{document}/i \\\end{CJK}' $template
+			;;
+		-m) shift;
+			LATEXOPT="$LATEXOPT -V fontfamily=MinionPro --template=$template"
+			# MinionPro conflicts with amssymb, see
+			# https://tex.stackexchange.com/questions/95033/minionpro-conflicting-with-amssymb
+			sed -i -e 's/amssymb,//' $template
+			;;
+		-i) shift; LATEXOPT="$LATEXOPT -V fontfamily=times" ;;
+		-c) shift; LATEXOPT="$LATEXOPT -V fontfamily=calligra" ;;
+		-n) shift; LATEXOPT="$LATEXOPT -N" ;;
+		--) shift; break;;
+		-x) shift; exec $0 -2 -t -n -m $@;;
+		*) true ;;
+	esac
+done
+
+die () {
+	echo $1
+	exit 1
+}
+pre () {
+#       printf "\0337[..] processing...\0338"
+       printf "\033[s[..] processing...\033[u"
+
+}
+post () {
+    printf "[K[[1;32mOK[;m] $1\n"
+}
+
+if test "$#" -eq 1; then
+	stat $1 >/dev/null || die 'stat failed'
+	pre
+	pandoc $LATEXOPT -o $1.pdf $1
+	post $1.pdf
+elif test "$#" -gt 1; then
+	filename=$1
+	stat $filename >/dev/null || die 'stat failed'
+	shift;
+	pre
+	pandoc $LATEXOPT -o $filename.pdf $filename $@
+	post $filename.pdf
+elif test "$#" -lt 1; then
+	Usage
+	die 'No source file specified.'
+fi
+rm $template || true

@@ -1,0 +1,113 @@
+#!/bin/bash
+# Deploy script for Withlinux
+# Copyright (C) 2016 Zhou Mo <cdluminate AT gmail DOT com>
+# MIT License
+set -e
+. ../lang/sh/lumin_log.sh
+
+# parse arguments
+if test "$1" = "-v"; then
+  verbose=1
+else
+  verbose=0
+fi
+
+# welcome banner
+info "-------------------------------------"
+info "Scanning personal working environment"
+info "-------------------------------------"
+
+# settings
+home=${HOME}
+
+# functions
+
+# definition of scans
+tempfile=$(mktemp)
+cat > $tempfile <<EOF
+ gitconfig $home/.gitconfig # git configuration
+ bashrc.lumin $home/.bashrc.lumin
+ bashrc.system $home/.bashrc.system
+ devscripts $home/.devscripts
+ dput.cf $home/.dput.cf
+ gbp.conf $home/.gbp.conf
+ xsession $home/.xsession
+ xinitrc $home/.xinitrc
+ vimrc $home/.vimrc
+ octaverc $home/.octaverc
+ gpg.conf $home/.gnupg/gpg.conf
+ conkyrc $home/.conkyrc
+ conky $home/.conky
+ quiltrc-dpkg $home/.quiltrc-dpkg
+ config.fish $home/.config/fish/config.fish
+ xbindkeysrc $home/.xbindkeysrc
+ ../lang/py3/tq $home/bin/tq # my task queue daemon for async task processing
+ ../lang/py3/util.freshdns.py $home/bin/freshdns
+ ../cluster/condor $home/bin/con # my HTCondor wrapper
+ ../lang/py3/ydtrans/t.py $home/bin/t # my youdao translation script
+ z $home/bin/z # my zfs tools wrapper
+ gpa $home/bin/gpa # git push ALLLLLLLLLLLLLLLLLLLL
+ keyrate $home/bin/keyrate # dirty workaround to key board rate problem
+ wifi $home/bin/wifi # wifi helper
+ ../lang/py3/stig $home/bin/stig
+ ../lang/py3/lsjson.py $home/bin/lsjson # pretty json printer
+ ./dunstrc $home/.config/dunst/dunstrc
+ compton.conf $home/.compton.conf
+ julia $home/bin/julia
+ fonts.conf $home/.fonts.conf
+ freshdnsrc $home/.freshdnsrc
+ lay $home/bin/lay
+EOF
+sources=( $(cat $tempfile | awk '{print $1}') )
+targets=( $(cat $tempfile | awk '{print $2}') )
+
+# check
+if ! test ${#sources[@]} -eq ${#targets[@]}; then
+  fatal "len(source) not equal to len(targets)"
+  exit 1
+fi
+
+# utility
+scanner () {
+  # argument check
+  if ( test -z $1 ) || ( test -z $2 ); then
+    fatal "scanner(): missing argument"
+  fi
+  # start scan
+  info "scan $1 -> $2"
+  if ! test -e $1; then fatal "  source file $1 doesn't exist"; return; fi
+  if (! test -e $2)&&(test -e $1); then
+     warn "  file $2 doesn't exist, fix this with:";
+     echo "$ ln -s $(pwd)/$1 $2"
+     return
+  fi
+  if test "$(stat -c %F $2)" = "symbolic link"; then
+    #debug "  target is symbolic link"
+    if test 1 -eq $verbose; then ls -l $2; fi
+  fi
+  #debug "  comparing..."
+  if test $verbose -eq 1; then
+    outputfile=/dev/stdout
+  else
+    outputfile=/dev/null
+  fi
+  if diff -ru $1 $2 1>$outputfile 2>&1; then
+    true
+    #debug "  => [Identical]"
+  else
+    warn "  => [Different]"
+    if test 1 -eq $verbose; then
+      git diff $1 $2 || true
+    fi
+  fi
+}
+
+# start scan
+if test 1 -eq $verbose; then
+  info "These files are to be scaned"
+  echo ${targets[@]}
+fi
+for (( i=0; i<${#targets[@]}; i++ )); do
+  scanner "${sources[i]}" "${targets[i]}"
+done
+debug "All config scans are finished, now scan package..."

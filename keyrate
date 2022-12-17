@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+# for Xorg
+xset r rate 170 96
+
+# for wayland (Gnome 3.26)
+# gnome-control-center -> universal access -> typing -> repeat keys

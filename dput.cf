@@ -1,0 +1,69 @@
+[dom-ppc64el]
+fqdn           = debomatic-ppc64el.debian.net
+incoming       = /srv/debomatic-ppc64el
+login          = debomatic
+method         = scp
+allow_unsigned_uploads  = 0
+allow_dcut     = 1
+scp_compress   = 1
+
+[dom-amd64]
+fqdn           = debomatic-amd64.debian.net
+incoming       = /srv/debomatic-amd64
+login          = debomatic
+method         = scp
+allow_unsigned_uploads  = 0
+allow_dcut     = 1
+scp_compress   = 1
+
+[dom-i386]
+fqdn           = debomatic-i386.debian.net
+incoming       = /srv/debomatic-i386
+login          = debomatic
+method         = scp
+allow_unsigned_uploads = 0
+allow_dcut     = 1
+scp_compress   = 1
+
+[dom-arm64]
+fqdn           = debomatic-arm64.debian.net
+incoming       = /srv/debomatic-arm64
+login          = debomatic
+method         = scp
+allow_unsigned_uploads  = 0
+allow_dcut     = 1
+scp_compress   = 1
+
+[dom-armel]
+fqdn           = debomatic-armel.debian.net
+incoming       = /srv/debomatic-armel
+login          = debomatic
+method         = scp
+allow_unsigned_uploads  = 0
+allow_dcut     = 1
+scp_compress   = 1
+
+[dom-armhf]
+fqdn           = debomatic-armhf.debian.net
+incoming       = /srv/debomatic-armhf
+login          = debomatic
+method         = scp
+allow_unsigned_uploads  = 0
+allow_dcut     = 1
+scp_compress   = 1
+
+[simd]
+fqdn           = repo.debiancn.org
+incoming       = /home/lumin/
+login          = lumin
+method         = sftp
+allow_unsigned_uploads = 0
+allow_dcut = 1
+
+[paradis]
+fqdn           = people.debian.org
+incoming       = /home/lumin/upload/
+login          = lumin
+method         = sftp
+allow_unsigned_uploads = 0
+allow_dcut     = 0

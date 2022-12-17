@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+
+<!--
+  Lumin's Fontconfig file. vim: set syntax=xml
+  Reference: fonts.conf(5)
+  Configure: copy or symlink to ~/.config/fontconfig/fonts.conf
+  NOTE: ~/.fonts.conf has been deprecated for quite a while
+  Utils:     fc-list, fc-match, fc-cache
+
+  Font Installation:
+    1. Global
+        sudo cp FONT /usr/local/share/fonts/
+    2. User-local
+        cp FONT ~/.fonts/
+        for cp FONT ~/.local/share/fonts/
+    3. Post
+        sudo fc-cache # rebuild font cache
+        fc-list # lookup available fonts
+        fc-match sans # check matching
+        fc-match -s sans:lang=zh # check matching
+
+  My Extra Fonts List:
+    Source Serief Pro
+    Source Sans Pro
+    Source Code Pro
+    Source Hans Sans
+    Source Hans Serif
+
+  A Very Basic Working Fontconfig example:
+
+<match>
+	<test name="family"><string>monospace</string></test>
+	<edit name="family" mode="prepend" binding="strong"> <string>Inconsolata</string> </edit>
+</match>
+
+  External Reference:
+    https://wiki.archlinux.org/index.php/Font_configuration
+    http://edyfox.codecarver.org/html/debian_testing_chinese.html
+
+-->
+
+                                                        <!-- Font Rendering -->
+<match target="font">
+	<edit name="antialias" mode="assign"> <bool>true</bool> </edit>
+</match>
+<match target="font">
+	<edit name="embeddedbitmap" mode="assign"> <bool>false</bool> </edit>
+</match>
+<match target="font">
+	<edit name="hinting" mode="assign" > <bool>true</bool> </edit>
+</match>
+<match target="font">
+	<edit name="hintstyle" mode="assign" > <const>hintfull</const> </edit>
+</match>
+<match target="font">
+	<edit name="rgba" mode="assign" > <const>rgb</const> </edit>
+</match>
+
+                                                   <!-- English Font Config -->
+
+<match target="pattern">
+	<test name="lang" compare="contains"> <string>en</string> </test>
+	<test name="family" qual="any"> <string>serif</string> </test>
+	<edit name="family" mode="prepend" binding="strong">
+		<string>Source Serif Variable</string>
+		<string>Noto Serif</string>
+	</edit>
+</match>
+<match target="pattern">
+	<test name="lang" compare="contains"> <string>en</string> </test>
+	<test qual="any" name="family"> <string>sans-serif</string> </test>
+	<edit name="family" mode="prepend" binding="strong">
+		<string>Roboto</string>
+		<string>Noto Sans</string>
+	</edit>
+</match>
+<match target="pattern">
+	<test name="lang" compare="contains"> <string>en</string> </test>
+	<test qual="any" name="family"> <string>monospace</string> </test>
+	<edit name="family" mode="prepend" binding="strong">
+		<string>Source Code Variable</string>
+		<string>Inconsolata</string>
+		<string>Noto Mono</string>
+	</edit>
+</match>
+
+                                                   <!-- Chinese Font Config -->
+
+<match target="pattern">
+	<test name="lang" compare="contains"> <string>zh</string> </test>
+	<test name="family"> <string>serif</string> </test>
+	<edit name="family" mode="prepend_first" binding="strong">
+		<string>Source Han Serif SC</string>
+	</edit>
+</match>
+<match target="pattern">
+	<test name="lang" compare="contains"> <string>zh</string> </test>
+	<test name="family"> <string>sans-serif</string> </test>
+	<edit name="family" mode="prepend_first" binding="strong">
+		<string>Source Han Sans HW SC</string>
+	</edit>
+</match>
+<match target="pattern">
+	<test name="lang" compare="contains"> <string>zh</string> </test>
+	<test name="family"> <string>monospace</string> </test>
+	<edit name="family" mode="prepend_first" binding="strong">
+		<string>Noto Sans Mono CJK SC</string>
+	</edit>
+</match>
+
+                                         <!-- Anti-Surprise Part, Important -->
+
+<alias>
+	<family>serif</family>
+	<prefer>
+		<family>Noto Serif</family>
+		<family>DejaVu Serif</family>
+		<family>Bitstream Vera Serif</family>
+		<family>Droid Serif</family>
+		<family>AR PL UMing CN</family>
+		<family>AR PL ShanHeiSun Uni</family>
+		<family>Droid Sans Fallback</family>
+		<family>WenQuanYi Micro Hei</family>
+		<family>WenQuanYi Zen Hei</family>
+		<family>Source Han Serif SC</family>
+	</prefer>
+</alias>
+
+<alias>
+	<family>sans-serif</family>
+	<prefer>
+		<family>Roboto</family>
+		<family>Noto Sans</family>
+		<family>DejaVu Sans</family>
+		<family>Bitstream Vera Sans</family>
+		<family>Droid Sans</family>
+		<family>Droid Sans Fallback</family>
+		<family>WenQuanYi Micro Hei</family>
+		<family>WenQuanYi Zen Hei</family>
+		<family>AR PL UMing CN</family>
+		<family>AR PL ShanHeiSun Uni</family>
+		<family>Source Han Sans HW SC</family>
+	</prefer>
+</alias>
+
+<alias>
+	<family>monospace</family>
+	<prefer>
+		<family>DejaVu Sans Mono</family>
+		<family>Bitstream Vera Sans Mono</family>
+		<family>Droid Sans Mono</family>
+		<family>Droid Sans Fallback</family>
+		<family>WenQuanYi Micro Hei Mono</family>
+		<family>WenQuanYi Zen Hei Mono</family>
+		<family>AR PL UMing CN</family>
+		<family>AR PL ShanHeiSun Uni</family>
+		<family>Noto Sans Mono CJK SC</family>
+	</prefer>
+</alias>
+
+<alias>
+	<family>Roboto</family>
+	<default> <family>sans-serif</family> </default>
+</alias>
+
+</fontconfig>

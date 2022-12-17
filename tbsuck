@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+# TensorBoard Sucks.
+glob=$(ls -d1 $1)
+echo $glob
+
+echo -n "tensorboard --logdir "
+for item in $glob; do
+	echo -n "$item:$item,"
+done
+echo -n "\b"

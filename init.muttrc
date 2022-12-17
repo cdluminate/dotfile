@@ -1,0 +1,102 @@
+# Lumin's Muttrc                                     -*- vim: set syntax=muttrc
+# ref: https://wiki.archlinux.org/index.php/Mutt
+# ref: https://wiki.gentoo.org/wiki/Mutt
+# ref: /usr/share/doc/mutt/examples/Muttrc.gz
+# ref: muttrc(5) mutt(1)
+#
+# source ~/.muttrc.head
+# mutt -F ~/.muttrc.another.setting
+# mutt -R (read-only mode)
+
+####
+# Write you main mutt config (~/.muttrc) like this:
+# source ~/.mutt/muttrc.head  (This config)
+# source "gpg -dq $HOME/.mutt/pass.gpg |" (your password)
+##
+
+# Import GnuPG
+source "cat /usr/share/doc/mutt/examples/gpg.rc |"
+# Import Colors
+#source /usr/share/doc/mutt/examples/colors.linux
+source "cat /usr/share/doc/mutt/examples/colors.angdraug |"
+# Import Sidebar
+source /usr/share/doc/mutt/examples/sample.muttrc-sidebar
+
+# General User Settings
+set editor = "vim -c 'set syntax=mail ft=mail enc=utf-8'"
+set use_from = yes
+set sort = reverse-threads
+set index_format="%4C %Z %{%Y %b %d} %-15.15L (%?l?%4l&%4c?) %s"
+set mark_old = no
+
+# Tweak Mutt Behaviour
+set header_cache = ~/.cache/mutt
+set imap_keepalive = 300
+set include = yes
+set mail_check = 120
+set menu_scroll = yes
+set message_cachedir = ~/.cache/mutt/messages
+set pager_context=5
+set pager_stop = yes
+set send_charset = "utf-8"
+set sleep_time = 0
+set sidebar_short_path = yes
+set sidebar_folder_indent = yes
+set header = no
+set fast_reply = yes
+unset imap_passive
+auto_view text/html
+auto_view application/pgp-signature
+macro attach S <save-entry><kill-line>~/.mutt/attach/
+
+# Tweak keybindings
+bind pager j next-line
+bind pager k previous-line
+bind pager <down> next-line
+bind pager <up> previous-line
+bind pager gg top
+bind pager G bottom
+bind pager r group-reply
+bind index r group-reply
+bind index G imap-fetch-mail
+
+# Tweak Color
+color indicator white magenta
+
+# GPG settings: press 'p' for GPG menu
+set my_gpgfin = 0x638BC75EC1E5C589067E35DE62645EB35F686A8A
+set pgp_sign_as = $my_gpgfin
+set pgp_self_encrypt_as = $my_gpgfin
+set pgp_autosign = no
+set pgp_autoencrypt = no
+set pgp_replysign = no
+set pgp_replyencrypt = no
+
+# Password Management with GPG
+#source "gpg -dq $HOME/.mutt/pass.gpg |"
+
+###############################################################################
+## Ref: https://riseup.net/en/email/clients/mutt
+## Account
+#set realname = "Your Name"
+#set my_username  = "xxx@yyy.zzz"
+#set my_password = "password"
+#set from = xxx@yyy.zzz
+#
+## Connection
+#set ssl_force_tls = yes
+#set ssl_starttls  = yes
+#
+## IMAP
+#set imap_user = $my_username
+#set imap_pass = $my_password
+#set folder = imaps://IMAP_SERVER:993
+#
+## Folder
+#set spoolfile = +INBOX
+#set postponed = +Drafts
+#set record    = +Sent
+#
+## SMTP
+#set smtp_url  = smtps://$my_username@SMTP_SERVER:465
+#set smtp_pass = $my_password

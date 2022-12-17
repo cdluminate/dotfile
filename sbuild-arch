@@ -1,0 +1,7 @@
+#!/bin/sh
+arch=${1}
+shift
+echo sudo sbuild-update -udcar unstable-${arch}-sbuild
+sudo sbuild-update -udcar unstable-${arch}-sbuild
+echo sbuild --no-clean -c unstable-${arch}-sbuild --build=${arch} --arch=${arch} $@
+sbuild --no-clean -c unstable-${arch}-sbuild --build=${arch} --arch=${arch} $@

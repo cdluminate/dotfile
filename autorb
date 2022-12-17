@@ -1,0 +1,169 @@
+#!/bin/sh
+# Copyright (C) 2019 Mo Zhou <lumin@debian.org>
+# MIT/Expat License.
+#set -xe
+
+Usage() {
+cat << EOF
+$0 [opts]  --  Auto-build Reverse Dependencies
+Options:
+    -h       show help message
+    -a ...   architecture
+    -b ...   build directory
+    -d ...   distribution
+    -e ...   extra package
+    -j ...   number of parallel jobs
+    -s ...   source package
+    -D       trigger download
+    -B       trigger build
+    -R       trigger report
+    -P       trigger result packing
+    -C       trigger builddir removal
+Examples:
+    $0 -D -s opencv  -> only download source packages of opencv rdeps
+    $0 -B -j4 -e.    -> build all rdeps with . as extra package dir
+    $0 -R            -> generate a report of build results
+    $0 -DBR -j4 -e. -s opencv  -> do all the above steps
+EOF
+exit 0
+}
+
+# check required tools
+[ ! -x /usr/bin/reverse-depends ] && \
+	(echo Please install ubuntu-dev-tools; exit 128)
+[ ! -x /usr/bin/sbuild ] && \
+	(echo Please install sbuild; exit 128)
+
+# Parse command line options
+while getopts "a:b:d:e:j:s:BDRPCh" opt; do
+	case $opt in
+	a) ARCH="$OPTARG";;
+	b) BUILDDIR="$OPTARG";;
+	d) DISTRIBUTION="$OPTARG";;
+	e) EXTRA="--extra-package=$(realpath $OPTARG)";;
+	j) JOBS="-j$OPTARG";;
+	s) SRC="$OPTARG";;
+	D) TRI_DOWNLOAD=true;;
+	B) TRI_BUILD=true;;
+	R) TRI_REPORT=true;;
+	P) TRI_PACK=true;;
+	C) TRI_CLEAN=true;;
+	h) Usage;;
+	*) exit 1;;
+	esac
+done
+shift `expr $OPTIND - 1`
+[ -z "$ARCH" ] && ARCH=$(dpkg --print-architecture)
+[ -z "$DISTRIBUTION" ] && DISTRIBUTION=unstable
+[ -z "$BUILDDIR" ] && BUILDDIR=AUTORB && BUILDDIR_=$(realpath $BUILDDIR)
+[ "$TRI_DOWNLOAD" = "true" ] && [ -z "$SRC" ] && (echo "Missing src!"; exit 4)
+[ ! -d $BUILDDIR ] && mkdir $BUILDDIR
+cd $BUILDDIR
+
+echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+echo "  Automatic Reverse Dependency Builder ...                            "
+echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+echo
+echo "          Distribution: $DISTRIBUTION"
+echo "             Build Dir: $BUILDDIR"
+echo "         Extra Package: $EXTRA"
+echo "         Parallel Jobs: $JOBS"
+echo
+
+if [ "$TRI_DOWNLOAD" = "true" ]; then
+	echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+	echo "  Downloading Source Tarballs ...                                     "
+	echo
+	echo "        Source package: $SRC"
+	rdepends=$(reverse-depends src:$SRC | awk '/^\*/{print $2}' | sort | uniq)
+	echo "       Number of Rdeps: $(echo $rdepends | awk '{print NF}')"
+	brdepends=$(reverse-depends -b src:$SRC | awk '/^\*/{print $2}' | sort | uniq)
+	echo "    Num of Build-Rdeps: $(echo $brdepends | awk '{print NF}')"
+	echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+	for rdep in $rdepends $brdepends; do
+		echo -n "Fetching $rdep ... "
+		if apt source -t $DISTRIBUTION $rdep --download-only >/dev/null 2>/dev/null; then
+			echo OK
+		else
+			echo FAILED
+			touch $rdep.apt-source.FAIL
+		fi
+done
+fi
+
+if [ "$TRI_BUILD" = "true" ]; then
+	echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+	echo "  Starting to Build ...                                               "
+	echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+	for dsc in $(ls *.dsc); do
+		if [ -r $dsc.OK ] || [ -r $dsc.FAIL ]; then
+			echo Skipping $dsc
+			continue
+		fi
+		echo "──────────────────────────────────────────────────────────────────"
+		echo sbuild $EXTRA $JOBS $dsc
+		echo "──────────────────────────────────────────────────────────────────"
+		if sbuild $EXTRA $JOBS $dsc; then
+			touch $dsc.OK;
+		else
+			touch $dsc.FAIL;
+		fi;
+	done
+fi
+
+if [ "$TRI_REPORT" = "true" ]; then
+	echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+	echo "  Build Results                                                       "
+	echo
+	if ls *.dsc >/dev/null 2>/dev/null; then
+		num_dsc=$(ls -1 *.dsc | wc -l)
+	else
+		num_dsc=0
+	fi
+	if ls *.OK >/dev/null 2>/dev/null; then
+		num_ok=$(ls -1 *.OK | wc -l)
+	else
+		num_ok=0
+	fi
+	if ls *.FAIL >/dev/null 2>/dev/null; then
+		num_fail=$(ls -1 *.FAIL | wc -l)
+	else
+		num_fail=0
+	fi
+	num_missing=$(expr $num_dsc - $num_ok - $num_fail)
+	echo "      OK: $num_ok"
+	echo "    FAIL: $num_fail"
+	echo " MISSING: $num_missing"
+	echo "≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡"
+	for dsc in $(ls *.dsc); do
+		if [ -r $dsc.OK ] && [ -r $dsc.FAIL ]; then
+			echo [???] $dsc
+		elif [ -r $dsc.OK ]; then
+			echo [OK] $dsc
+		elif [ -r $dsc.FAIL ]; then
+			buildlog=${dsc%.dsc}_$ARCH.build
+			if ! [ -r "$buildlog" ]; then
+				echo [Missing Build] $dsc
+			else
+				status=$(grep -x -P '^Status:(.*)' $buildlog | sed -e 's/Status: \(.*\)/\1/')
+				failstage=$(grep -x -P '^Fail-Stage:(.*)' $buildlog | sed -e 's/Fail-Stage: \(.*\)/\1/')
+				echo "[FAIL | $status $failstage] $dsc"
+			fi
+		else
+			echo [Missing] $dsc
+		fi
+	done
+fi
+
+if [ "$TRI_PACK" = "true" ]; then
+	if [ -z "$SRC" ]; then
+		tar jcvf autorb.txz *.dsc *.OK *.FAIL *.build
+	else
+		tar jcvf ${SRC}_autorb.txz *.dsc *.OK *.FAIL *.build
+	fi
+fi
+
+if [ "$TRI_CLEAN" = "true" ]; then
+	for I in $BUILDDIR_/*; do rm -v $I; done
+	rmdir $BUILDDIR_
+fi

@@ -1,0 +1,11 @@
+// https://code.visualstudio.com/docs/getstarted/settings
+// Linux $HOME/.config/Code/User/settings.json
+{
+    "python.pythonPath": "/usr/bin/python3",
+    "workbench.colorTheme": "Quiet Light",
+    "editor.fontSize": 17,
+    "editor.rulers": [ 80, 120 ],
+    "editor.fontFamily": "'Fira Code', 'Consolas','Ubuntu Mono'",
+    "editor.fontLigatures": true,
+    "julia.executablePath": "/home/lumin/bin/julia",
+}
