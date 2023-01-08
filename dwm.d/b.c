@@ -2,6 +2,9 @@
 // personal backlight helper for dwm, setuid version
 // Copyright © 2017 Lumin
 //
+// Compile:
+// gcc $(dpkg-buildflags --get CFLAGS) $(dpkg-buildflags --get LDFLAGS) -o b b.c -D__T490__
+//
 // Usage: 1. sudo chown root:root <ELF>
 //        2. sudo chmod u+s <ELF>
 //        3. <ELF>
@@ -13,6 +16,8 @@
 // configuration
 #if defined(__T470p__)
   #define BLDIR "/sys/class/backlight/intel_backlight"
+#elif defined(__T490__)
+  #define BLDIR "/sys/class/backlight/intel_backlight"  // compat linux 6.0
 #else
   #error "Compile with a laptop name defination, e.g. gcc ... -D__T470p__ ."
 #endif
