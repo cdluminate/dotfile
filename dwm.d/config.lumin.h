@@ -3,11 +3,15 @@
  */
 /* See LICENSE file for copyright and license details. */
 
+ 
+#define __F_FIRA_CODE__ "Fira Code:size=12"
+#define __F_OPERATOR_MONO__ "Operator Mono:size=12"
+
 /* appearance */
 static const char *fonts[] = {
-	"Fira Code:size=12"
+	__F_OPERATOR_MONO__
 };
-static const char dmenufont[]       = "Fira Code:size=12";
+static const char dmenufont[]       = __F_OPERATOR_MONO__;
 static const char normbordercolor[] = "#444444";
 static const char normbgcolor[]     = "#222222";
 static const char normfgcolor[]     = "#bbbbbb";
@@ -76,6 +80,8 @@ static const char sh_alv[]   = "amixer -q sset Master 5%-";
 static const char sh_arv[]   = "amixer -q sset Master 5%+";
 //static const char sh_bri_d[] = "b -; dwmstatus nosleep"; // dotfile/b.c
 //static const char sh_bri_u[] = "b +; dwmstatus nosleep"; // dotfile/b.c
+static const char sh_bri_d[] = "command -v b && b -";
+static const char sh_bri_u[] = "command -v b && b +';
 static const char sh_mute[]  = "amixer sget Master | grep '\\[off\\]' >/dev/null && amixer -q sset Master unmute || amixer -q sset Master mute";
 
 
@@ -87,8 +93,8 @@ static Key keys[] = {
     { 0,            XF86AudioLowerVolume,      spawn,          SHCMD(sh_alv)},
     { 0,            XF86AudioRaiseVolume,      spawn,          SHCMD(sh_arv)},
     { 0,                   XF86AudioMute,      spawn,          SHCMD(sh_mute)},
-    //{ 0,             XF86MonBrightnessUp,      spawn,          SHCMD(sh_bri_u)},
-    //{ 0,           XF86MonBrightnessDown,      spawn,          SHCMD(sh_bri_d)},
+    { 0,             XF86MonBrightnessUp,      spawn,          SHCMD(sh_bri_u)},
+    { 0,           XF86MonBrightnessDown,      spawn,          SHCMD(sh_bri_d)},
 
     /* defaults */
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
