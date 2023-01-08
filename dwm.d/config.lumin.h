@@ -1,5 +1,6 @@
 /* Copyright (C) 2019 Mo Zhou
  * Usage: override dwm/config.h and compile
+ * dwm version: 6.4
  */
 /* See LICENSE file for copyright and license details. */
 
@@ -12,6 +13,17 @@ static const char *fonts[] = {
 	__F_OPERATOR_MONO__
 };
 static const char dmenufont[]       = __F_OPERATOR_MONO__;
+static const char col_gray1[]       = "#222222";
+static const char col_gray2[]       = "#444444";
+static const char col_gray3[]       = "#bbbbbb";
+static const char col_gray4[]       = "#eeeeee";
+static const char col_cyan[]        = "#005577";
+static const char *colors[][3]      = {
+      /*               fg         bg         border   */
+      [SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
+      [SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
+};
+
 static const char normbordercolor[] = "#444444";
 static const char normbgcolor[]     = "#222222";
 static const char normfgcolor[]     = "#bbbbbb";
@@ -37,10 +49,12 @@ static const Rule rules[] = {
 	{ "Iceweasel",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 
+
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
@@ -81,7 +95,7 @@ static const char sh_arv[]   = "amixer -q sset Master 5%+";
 //static const char sh_bri_d[] = "b -; dwmstatus nosleep"; // dotfile/b.c
 //static const char sh_bri_u[] = "b +; dwmstatus nosleep"; // dotfile/b.c
 static const char sh_bri_d[] = "command -v b && b -";
-static const char sh_bri_u[] = "command -v b && b +';
+static const char sh_bri_u[] = "command -v b && b +";
 static const char sh_mute[]  = "amixer sget Master | grep '\\[off\\]' >/dev/null && amixer -q sset Master unmute || amixer -q sset Master mute";
 
 
@@ -134,7 +148,7 @@ static Key keys[] = {
 
 /* button definitions */
 /* click can be ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
-static Button buttons[] = {
+static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
 	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
