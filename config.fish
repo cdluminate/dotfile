@@ -32,49 +32,13 @@ alias ip="ip -c"
 
 abbr -a aug sudo apt upgrade
 abbr -a adp sudo apt dist-upgrade
-abbr -a off systemctl poweroff
-abbr -a sv sudo supervisorctl
 abbr -a bt bluetoothctl
-abbr -a nb jupyter notebook --no-browser
 abbr -a px ps -ux
 
-abbr -a pp pypy3 -m IPython
-abbr -a bp bpython3
-abbr -a jqt jupyter-qtconsole
-abbr -a ap autopep8 -i
 abbr -a sshp ssh -o PreferredAuthentications=password
-abbr -a wb whalebuilder build debdev
-abbr -a cb sudo cowbuilder
-abbr -a ao annotate-output
 
 # --- Insane 1-Char abbreviations ---
 # history | awk '{print $1}' | sort | uniq -c | sort -n
-abbr -a a aria2
-abbr -a b btrfs
-abbr -a c catimg
-abbr -a d pydf
-abbr -a e evince
-abbr -a f ffmpeg
-abbr -a g ag # grep/ack/ag/rg
-abbr -a h h5ls
-abbr -a i ipython3
-abbr -a j julia
-#abbr -a k true
-#abbr -a l ls -lh
-abbr -a m mutt 
-abbr -a n ncdu
-#abbr -a o true
-abbr -a p ipython3 # pdflatex
-#abbr -a q true
-abbr -a r ranger
-#abbr -a s # TK-GUI shortcut, strace
-abbr -a t ydcv # translator https://raw.githubusercontent.com/felixonmars/ydcv/master/src/ydcv.py
-abbr -a u sudo update-alternatives
-abbr -a v vim
-#abbr -a w true
-abbr -a x xrandr
-#abbr -a y true
-#abbr -a z # zfs helper
 
 # omf install grc
 # fix grc behaviour
@@ -116,7 +80,9 @@ export QUILT_PATCHES=debian/patches
 # https://github.com/fish-shell/fish-shell/issues/3473#issuecomment-254599357
 # https://superuser.com/questions/679498/specifying-an-alternate-shell-with-rsync
 if status --is-interactive
-   fortune-zh
+   if command -v fortune-zh > /dev/null
+      fortune-zh
+   end
    grc uptime
 end
 
@@ -140,3 +106,6 @@ end
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/home/lumin/bin/gsutil/google-cloud-sdk/path.fish.inc' ]; . '/home/lumin/bin/gsutil/google-cloud-sdk/path.fish.inc'; end
+
+# Disable the "welcome to fish ..." message.
+set -U fish_greeting ""
