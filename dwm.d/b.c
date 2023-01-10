@@ -25,13 +25,13 @@
 #define BL_CUR BLDIR"/brightness"
 
 #define readstuff(pf, path, pattern, buf) do { \
-	if (access("path", R_OK)) perror("access"); \
+	if (access(path, R_OK)) perror("access"); \
 	pf = fopen(path, "r"); \
 	fscanf(pf, pattern, buf); \
 	fclose(pf); \
 } while(0)
 #define writestuff(stuff, path, pattern, buf) do { \
-	if (access("path", R_OK)) perror("access"); \
+	if (access(path, R_OK)) perror("access"); \
 	pf = fopen(path, "w"); \
 	fprintf(pf, pattern, buf); \
 	fclose(pf); \
