@@ -14,13 +14,11 @@ rsync
 >;
 
 my @packages= qw<
-orchis-gtk-theme
-bibata-cursor-theme
-seahorse-nautilus
 aptitude
 arandr
 aria2
 avfs
+bibata-cursor-theme
 blender
 bpython3
 breeze-cursor-theme
@@ -79,7 +77,6 @@ gotop
 gpm
 grc
 guake
-yakuake
 gucharmap
 gufw
 guidedog
@@ -119,6 +116,7 @@ octave
 oneko
 openconnect
 openshot
+orchis-gtk-theme
 p7zip
 pandoc
 pigz
@@ -135,14 +133,15 @@ qtqr
 rakudo
 ranger
 redshift-gtk
+retext
 rfkill
 ripgrep
 rofi
 rr
-retext
 rsync
 sagemath
 sakura
+seahorse-nautilus
 sed
 shorewall
 smartmontools
@@ -176,16 +175,17 @@ valgrind
 vim
 vim-airline
 vim-autopep8
+vim-finger
 vim-fugitive
 vim-pathogen
 vim-python-jedi
 vim-syntastic
 vim-youcompleteme
-vim-finger
 virtualbox
 vscode
 w3m
 wesnoth
+wezterm
 whalebuilder
 whois
 wicd-curses
@@ -195,6 +195,7 @@ xbindkeys
 xbomb
 xonsh
 xrandr
+yakuake
 yapf3
 you-get
 youtube-dl
