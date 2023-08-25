@@ -83,7 +83,7 @@
     "data": {},
     "touchButton": false,
     "superRMB": true,
-    "showLabels": false,
-    "showChildLabels": true
+    "showLabels": true,
+    "showChildLabels": false
   }
 ]
