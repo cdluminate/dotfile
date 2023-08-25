@@ -1,0 +1,89 @@
+[
+  {
+    "name": "MyPie",
+    "icon": "appimagekit-littleweeb",
+    "shortcut": "<Primary>space",
+    "centered": false,
+    "id": 0,
+    "children": [
+      {
+        "name": "WezTerm",
+        "icon": "org.wezfurlong.wezterm",
+        "type": "Command",
+        "data": {
+          "command": "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=wezterm org.wezfurlong.wezterm start --cwd ."
+        },
+        "angle": -1
+      },
+      {
+        "name": "Evolution Mail and Calendar",
+        "icon": "evolution",
+        "type": "Command",
+        "data": {
+          "command": "evolution %U"
+        },
+        "angle": -1
+      },
+      {
+        "name": "Firefox Web Browser",
+        "icon": "firefox",
+        "type": "Command",
+        "data": {
+          "command": "/usr/lib/firefox/firefox %u"
+        },
+        "angle": -1
+      },
+      {
+        "name": "Files",
+        "icon": "org.gnome.Nautilus",
+        "type": "Command",
+        "data": {
+          "command": "nautilus --new-window %U"
+        },
+        "angle": -1
+      },
+      {
+        "name": "LyX",
+        "icon": "lyx",
+        "type": "Command",
+        "data": {
+          "command": "lyx %F"
+        },
+        "angle": -1
+      },
+      {
+        "name": "Inkscape Vector Graphics Editor",
+        "icon": "org.inkscape.Inkscape",
+        "type": "Command",
+        "data": {
+          "command": "inkscape %F"
+        },
+        "angle": -1
+      },
+      {
+        "name": "Google Chrome",
+        "icon": "google-chrome",
+        "type": "Command",
+        "data": {
+          "command": "/usr/bin/google-chrome-stable %U"
+        },
+        "angle": -1
+      },
+      {
+        "name": "Tilix",
+        "icon": "com.gexperts.Tilix",
+        "type": "Command",
+        "data": {
+          "command": "tilix"
+        },
+        "angle": -1
+      }
+    ],
+    "type": "CustomMenu",
+    "data": {},
+    "touchButton": false,
+    "superRMB": true,
+    "showLabels": false,
+    "showChildLabels": true
+  }
+]
