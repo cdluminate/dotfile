@@ -1,0 +1,30 @@
+Source: blis
+Description: BLAS-like Library Instantiation Software Framework
+Section: math
+Version: 0.6.0
+Maintainer: M. Zhou <lumin@debian.org>
+Build-Depends: debhelper-compat (= 12), python3
+
+rules:
+    override_dh_auto_configure: |
+        ./configure \
+            --prefix=/usr \
+            --enable-cblas \
+            --enable-static \
+            --enable-shared \
+            --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
+            -b 32 -i 32 -t openmp \
+            auto
+    override_dh_auto_test: |
+        $(MAKE) check
+ 
+control:
+    libblis2:
+        install: |
+            usr/lib/*/libblis.so.*
+    libblis-dev:
+        install: |
+            usr/lib/*/libblis.so
+            usr/lib/*/libblis.a
+            usr/include
+            usr/share

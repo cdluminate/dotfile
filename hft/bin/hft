@@ -1,0 +1,245 @@
+#!/usr/bin/python3
+__HFT_SPEC__ = '''
+Hatless Folded Text (HFT)
+=========================
+Copyright (C) 2019 M. Zhou <lumin@debian.org>, MIT LICENSE.
+
+Typical Usage
+-------------
+
+Fold a directory of (hatless) plain files in verbose mode::
+
+  hft -v -f srcdir/ -d foobar.hft
+
+Unfold an HFT file into the directory in verbose mode::
+
+  hft -v -u foobar.hft -d destdir/
+
+Hatless Folded Text (HFT) Specification
+---------------------------------------
+
+1. "^# COMMENT"
+   Single-line comment. Can be placed anywhere in an HFT file.
+
+   Example::
+
+        ^# This is a comment
+
+2. "^ FILENAME [MODE]"
+   Any non-control content following this line is regarded as the content
+   of file FILENAME. MODE is the optional file mode of FILENAME in python
+   Octet literal form, e.g. "0o755".
+
+   Example::
+
+       ^ bin/helloworld 0o755
+       #!/bin/sh
+       echo "Hello, world!"
+
+3. "^^ FILENAME"
+   Similar to "^ FILENAME" but this opens FILENAME in APPEND mode.
+
+   Example::
+
+       ^^ bin/helloworld
+       echo "Hello, world! Again."
+
+4. "^ FILENAME -> TARGET"
+   A symbol link FILENAME pointing to TARGET.
+
+   Example::
+
+       ^ bin/hello-world -> helloworld
+
+5. "@TOKEN@"
+   Placeholder tokens to be replaced later. (To be implemented)
+'''
+__VERSION__ = '0.3~alpha'
+import argparse
+import sys, os, re, subprocess, shlex
+import chardet
+from typing import *
+
+_C33  = "\x1b[1;33m"
+_C35  = "\x1b[1;35m"
+_C36  = "\x1b[1;36m"
+_C162 = "\x1b[1;38;5;162m"
+_c    = "\x1b[0;m"
+
+
+def hft_fold(path: str, *, verbose=False) -> List[str]:
+    '''
+    Fold a given file or directory into hft format. It is basically
+    equivalent to::
+
+        #!/bin/sh
+        for file in $(find $1 -type f | sort); do
+            echo "^ $file"
+            cat $file
+        done
+    '''
+    if os.path.isfile(path):
+        raise NotImplementedError
+    elif os.path.isdir(path):
+        hft = []
+        for root, dirs, files in os.walk(path):
+            for name in files:
+                # probe the file
+                p = os.path.join(root, name)
+                if os.path.islink(p):
+                    hft.append(f'^ {p} -> {os.readlink(p)}\n')
+                    if verbose: print(f'{_C162}HFT-fold:{_c}', p, '->',
+                            os.readlink(p))
+                    continue
+                elif not os.path.isfile(p):
+                    raise TypeError(f"Unsupported File Type: {p}!")
+                fmode = oct(os.stat(p).st_mode)
+                hft.append(f'^ {p} {fmode}\n')
+                # open and read the lines
+                f = open(p, 'rt')
+                try:
+                    lines = f.readlines()
+                except UnicodeError as e:
+                    f.close()
+                    enc = chardet.detect(open(p, 'rb').read())['encoding']
+                    f = open(p, 'rt', encoding=enc)
+                    lines = f.readlines()
+                if verbose: print(f'{_C162}HFT-fold:{_c}', p)
+                # syntax check
+                if any([x.startswith('^') for x in lines]):
+                    print(f'{p}: Syntax Error!')
+                    raise SyntaxError("Hat(^)-leading line is not allowed!")
+                # append and next
+                hft.extend(lines)
+                f.close()
+        return hft
+    else:
+        raise TypeError(f"Unsupported {path}!")
+
+
+def hft_unfold(hft: List[str], destdir:str='', *,
+        verbose:bool=False, force:bool=False) -> None:
+    '''
+    Unfold an HFT file.
+    '''
+    curline, rest, fp, fmode, wmode = None, hft, None, None, 'w'
+    r_comment     = re.compile('^\^#.*$')
+    r_file_mode   = re.compile('^\^\s*([/\S]+)\s+([o\d]+)\s*$')
+    r_file        = re.compile('^\^\s*([/\S]+)\s*$')
+    r_file_ap     = re.compile('^\^\^\s*([/\S]+)\s*$')
+    r_symlink     = re.compile('^\^\s*([/\S]+)\s*->\s*([/\S]+)\s*$')
+    r_var_literal = re.compile('^\^\$\s*(\S+)\s+([^`].*)\s*$')
+    r_var_cmd     = re.compile('^\^\$\s*(\S+)\s+`(.*?)`\s*$')
+    r_placeholder = re.compile('@(\S+)@')
+    # Skip the header
+    while len(rest) > 0 and not rest[0].startswith('^'):
+        rest = rest[1:]
+    # Start handling the HFT
+    while len(rest) > 0:
+        curline, rest = rest[0], rest[1:]
+        if r_comment.match(curline):
+            # A COMMENT LINE
+            continue
+        elif any([r_file.match(curline), r_file_mode.match(curline),
+                  r_file_ap.match(curline)]):
+            # A PATH-MODE LINE
+            if fp is not None:
+                fp.close()
+                fp = None
+            # parse the "^ filepath [mode]" line
+            if r_file_mode.match(curline):
+                path, fmode = r_file_mode.match(curline).groups()
+                fmode = eval(fmode)
+                wmode = 'w'
+            elif r_file.match(curline):
+                path, fmode = r_file.match(curline).group(1), None
+                wmode = 'w'
+            elif r_file_ap.match(curline):
+                path, fmode = r_file_ap.match(curline).group(1), None
+                wmode = 'a'
+            else:
+                raise SyntaxError(f"Parser Error: Invalid line '{curline}'")
+            # create the new file
+            path = os.path.join(destdir, path)
+            if os.path.exists(path) and not force and (wmode != 'a'):
+                raise Exception(f'{path} already exists!')
+            if not os.path.exists(os.path.dirname(path)):
+                if os.path.dirname(path):
+                    os.makedirs(os.path.dirname(path))
+            fp = open(path, wmode)
+            if fmode is not None: os.chmod(path, fmode)
+            if verbose: print(f'{_C162}HFT-unfold:{_c}', path)
+        elif r_symlink.match(curline):
+            # A SYMLINK LINE
+            if fp is not None:
+                fp.close(); fp = None;
+            sldst, slsrc = r_symlink.match(curline).groups()
+            path = os.path.join(destdir, sldst)
+            if os.path.exists(path) and not force:
+                raise Exception(f'{path} already exists!')
+            if not os.path.exists(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+            if os.path.exists(path) and force:
+                os.unlink(path)
+            os.symlink(slsrc, path)
+            if verbose: print(f'{_C162}HFT-unfold:{_c}', path, '->', slsrc)
+        else:  # NORMAL CONTENT
+            if fp is None:
+                raise SyntaxError(f"SyntaxError: {curline}")
+            if r_placeholder.search(curline):
+                placeholders = r_placeholder.findall(curline)
+                for pl in placeholders:
+                    if hftmarks.get(pl, None) is None and verbose:
+                        if verbose: print(f'HFT-warn:',
+                                'Ignoring undefined mark', f'[{pl}]')
+                        continue
+                    curline = curline.replace(f'@{pl}@', str(hftmarks.get(pl)))
+            fp.write(curline)
+    if fp is not None: fp.close()
+    return
+
+
+if __name__ == '__main__':
+
+    ag = argparse.ArgumentParser()
+    ag.add_argument('-f', '--fold', type=str, default='', required=False,
+            help='fold the given file or directory')
+    ag.add_argument('-u', '--unfold', type=str, default='', required=False,
+            help='unfold the given HFT file, (incl. /dev/stdin)')
+    ag.add_argument('-d', '--dest', type=str, default='', required=False,
+            help='destination for fold/unfold an HFT file (/dev/stdout can be used when folding)')
+    ag.add_argument('-F', '--force', action='store_true', required=False,
+            help='force overwrite the output destination')
+    ag.add_argument('-S', '--spec', action='store_true', required=False,
+            help='print the Hatless Folded Text spec')
+    ag.add_argument('-v', '--verbose', action='store_true', required=False,
+            help='toggle verbose mode')
+    ag.add_argument('-V', '--version', action='store_true', required=False,
+            help='print version information')
+    ag, agparser = ag.parse_args(), ag
+
+    # Misc info.
+    if ag.version:
+        print(f'Hatless Folded Text, Version {__VERSION__}')
+        exit(0)
+    elif ag.spec:
+        print(__HFT_SPEC__)
+        exit(0)
+
+    # Do folding / unfolding
+    if not any([ag.fold, ag.unfold]):
+        agparser.print_help()
+    elif all([ag.fold, ag.unfold]):
+        raise ValueError("Both fold and unfold have been specified!")
+    elif ag.fold:
+        if not ag.dest:
+            ag.dest = re.sub('/*$', '', ag.fold) + '.hft'
+        if os.path.exists(ag.dest) and not ag.force:
+            raise Exception(f"{ag.dest} already exists!")
+        hft = hft_fold(ag.fold, verbose=ag.verbose)
+        with open(ag.dest, 'w') as f:
+            f.writelines(hft)
+    elif ag.unfold:
+        with open(ag.unfold, 'r') as f:
+            hft = f.readlines()
+        hft_unfold(hft, ag.dest, verbose=ag.verbose, force=ag.force)
