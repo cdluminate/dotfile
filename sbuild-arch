@@ -1,4 +1,8 @@
 #!/bin/sh
+if test -z "$(command -v time)"; then
+    echo executable "time" is not installed.
+    exit 1
+fi
 arch=${1}
 shift
 echo sudo sbuild-update -udcar unstable-${arch}-sbuild
