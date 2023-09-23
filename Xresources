@@ -1,4 +1,5 @@
 !Put this file to ~/.Xdefaults or ~/.Xresources
+! Then xrdb -merge ~/.Xresources
 !Use mouse selection + click to copy
 !Use mouse middle click, or Shift+Insert to paste
 ! References:
