@@ -1,4 +1,9 @@
-# put this file to ~/.Xresources
-# then xrdb -merge ~/.Xresources
+!Put this file to ~/.Xdefaults or ~/.Xresources
+!Use mouse selection + click to copy
+!Use mouse middle click, or Shift+Insert to paste
+! References:
+! https://www.futurile.net/2016/06/15/xterm-256color-themes-molokai-terminal-theme/
+*customization: -color
+xterm*termName: xterm-256color
 xterm*faceName: Operator Mono
 xterm*faceSize: 17

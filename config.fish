@@ -11,6 +11,7 @@ export XMODIFIERS=@im=fcitx
 export BROWSER=w3m
 export FZF_DEFAULT_COMMAND='fdfind --type file --follow'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export TERM=xterm-256color
 
                                                                   # - Helpers -
 function aup
