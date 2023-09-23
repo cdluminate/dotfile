@@ -1,0 +1,4 @@
+# put this file to ~/.Xresources
+# then xrdb -merge ~/.Xresources
+xterm*faceName: Operator Mono
+xterm*faceSize: 17

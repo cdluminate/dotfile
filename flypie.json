@@ -7,11 +7,11 @@
     "id": 0,
     "children": [
       {
-        "name": "WezTerm",
-        "icon": "org.wezfurlong.wezterm",
+        "name": "UXTerm",
+        "icon": "mini.xterm",
         "type": "Command",
         "data": {
-          "command": "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=wezterm org.wezfurlong.wezterm start --cwd ."
+          "command": "uxterm"
         },
         "angle": -1
       },
@@ -83,7 +83,7 @@
     "data": {},
     "touchButton": false,
     "superRMB": true,
-    "showLabels": true,
+    "showLabels": false,
     "showChildLabels": false
   }
 ]
