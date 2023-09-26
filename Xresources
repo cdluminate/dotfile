@@ -9,6 +9,13 @@
 xterm*termName: xterm-256color
 xterm*faceName: Operator Mono
 xterm*faceSize: 17
+xterm*faceSize1: 8
+xterm*faceSize2: 10
+xterm*faceSize3: 13
+xterm*faceSize4: 16
+xterm*faceSize5: 18
+xterm*faceSize6: 20
+xterm*faceSize7: 24
 xterm*VT100.locale: true
 xterm*VT100.metaSendsEscape: true
 xterm*VT100.saveLines: 131072
@@ -16,6 +23,10 @@ xterm*VT100.scrollBar: false
 xterm*VT100.scrollBar.width: 0
 
 ! https://unix.stackexchange.com/questions/225062/how-can-i-copy-text-from-xterm-awesome-debian-virtualbox
+! https://www.futurile.net/2016/06/14/xterm-setup-and-truetype-font-configuration/
 xterm*VT100.Translations: #override \
-                 Ctrl Shift <Key>V:    insert-selection(CLIPBOARD) \n\
-                 Ctrl Shift <Key>C:    copy-selection(CLIPBOARD)
+      Ctrl Shift <Key>V:    insert-selection(CLIPBOARD) \n\
+      Ctrl Shift <Key>C:    copy-selection(CLIPBOARD) \n\
+      Ctrl <Key> minus:     smaller-vt-font() \n\
+      Ctrl <Key> plus:      larger-vt-font() \n\
+      Ctrl <Key> 0:         set-vt-font(d)
