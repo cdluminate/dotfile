@@ -1,0 +1,24 @@
+# Initialize new style completion
+autoload -Uz compinit
+compinit
+zstyle ':completion:*::::' completer _expand _complete _ignored _approximate
+
+# Initialize prompt
+PROMPT="%F{cyan}%~%f %F{red}❯%F{yellow}❯%F{green}❯%F{cyan}❯%f%b "
+RPROMPT="%B%(?..%F{red}[%?]%f )%F{magenta}%*%f"
+
+# Adjust Zsh behaviour
+setopt autocd autolist
+setopt inc_append_history share_history
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.zsh_history
+
+# Aliases
+alias ls='ls --color'
+alias jl='julia'
+
+# Homebrew
+eval "$(/opt/homebrew/bin/brew shellenv)"
+source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
