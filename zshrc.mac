@@ -23,5 +23,15 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+# Keyboard Repeat Rate (Critical)
+# https://apple.stackexchange.com/questions/443326/sub-15ms-key-repeat-speed-on-macos-monterey
+# https://apple.stackexchange.com/questions/10467/how-to-increase-keyboard-key-repeat-rate-on-os-x
+#defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
+#defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)
+
+# Drag window from anywhere
+# https://mmazzarolo.com/blog/2022-04-16-drag-window-by-clicking-anywhere-on-macos/
+# defaults write -g NSWindowShouldDragOnGesture -bool true
+
 # Other software
 # https://rectangleapp.com
