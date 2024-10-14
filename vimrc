@@ -84,11 +84,11 @@ set ruler
 let g:ycm_path_to_python_interpreter = '/usr/bin/python3'
 
 " colorscheme slate
-colorscheme ron
+"colorscheme ron
 
 " pathogen
-execute pathogen#infect()
-let g:autopep8_disable_show_diff=1
+"execute pathogen#infect()
+"let g:autopep8_disable_show_diff=1
 
 " vim-airline configuration
 let g:airline_powerline_fonts = 1
