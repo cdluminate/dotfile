@@ -100,8 +100,18 @@ end
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-if test -e /home/lumin/anaconda3/bin/conda
-	eval /home/lumin/anaconda3/bin/conda "shell.fish" "hook" $argv | source
+if test -f /home/lumin/miniconda3/bin/conda
+    eval /home/lumin/miniconda3/bin/conda "shell.fish" "hook" $argv | source
+else
+    if test -f "/home/lumin/miniconda3/etc/fish/conf.d/conda.fish"
+        . "/home/lumin/miniconda3/etc/fish/conf.d/conda.fish"
+    else
+        set -x PATH "/home/lumin/miniconda3/bin" $PATH
+    end
+end
+
+if test -f "/home/lumin/miniconda3/etc/fish/conf.d/mamba.fish"
+    source "/home/lumin/miniconda3/etc/fish/conf.d/mamba.fish"
 end
 # <<< conda initialize <<<
 
