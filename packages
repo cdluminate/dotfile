@@ -14,6 +14,7 @@ rsync
 >;
 
 my @packages= qw<
+mate-tweak
 solaar-gnome3
 aptitude
 arandr
