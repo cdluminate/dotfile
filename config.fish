@@ -28,11 +28,9 @@ function ips
 	ip -s -c -h a
 end
 
-alias jl="julia --color=yes"
 alias ip="ip -c"
 
 abbr -a aug sudo apt upgrade
-abbr -a adp sudo apt dist-upgrade
 abbr -a bt bluetoothctl
 abbr -a px ps -ux
 
@@ -42,22 +40,9 @@ abbr -a sshp ssh -o PreferredAuthentications=password
 # history | awk '{print $1}' | sort | uniq -c | sort -n
 
 # omf install grc
-# fix grc behaviour
+source /etc/grc.fish
 alias ls="ls --color"
-alias findmnt="grc findmnt"
-alias lsblk="grc lsblk"
-alias lsmod="grc lsmod"
-alias lspci="grc lspci"
-alias stat="grc stat"
-alias env="grc env"
-alias lsof="grc lsof"
-alias uptime="grc uptime"
-alias ss="grc ss"
-alias iptables="grc iptables"
-alias id="grc id"
-alias df="grc df -h"
-alias mtr="mtr -t"
-alias dig="grc dig"
+alias dg="debgpt"
 
                                                          # - debian packaging - 
 function dquilt
@@ -81,9 +66,6 @@ export QUILT_PATCHES=debian/patches
 # https://github.com/fish-shell/fish-shell/issues/3473#issuecomment-254599357
 # https://superuser.com/questions/679498/specifying-an-alternate-shell-with-rsync
 if status --is-interactive
-   if command -v fortune-zh > /dev/null
-      fortune-zh
-   end
    grc uptime
 end
 
@@ -97,26 +79,6 @@ end
 function fish_right_prompt -d "write out the right prompt"
 	date '+%H:%M'
 end
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-if test -f /home/lumin/miniconda3/bin/conda
-    eval /home/lumin/miniconda3/bin/conda "shell.fish" "hook" $argv | source
-else
-    if test -f "/home/lumin/miniconda3/etc/fish/conf.d/conda.fish"
-        . "/home/lumin/miniconda3/etc/fish/conf.d/conda.fish"
-    else
-        set -x PATH "/home/lumin/miniconda3/bin" $PATH
-    end
-end
-
-if test -f "/home/lumin/miniconda3/etc/fish/conf.d/mamba.fish"
-    source "/home/lumin/miniconda3/etc/fish/conf.d/mamba.fish"
-end
-# <<< conda initialize <<<
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/lumin/bin/gsutil/google-cloud-sdk/path.fish.inc' ]; . '/home/lumin/bin/gsutil/google-cloud-sdk/path.fish.inc'; end
 
 # Disable the "welcome to fish ..." message.
 set -U fish_greeting ""
