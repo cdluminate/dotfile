@@ -1,0 +1,9 @@
+#!/bin/sh
+# Put it to /var/cache/ccache-sbuild/sbuild-setup,
+# and append this script to the sbuild command-prefix.
+export CCACHE_DIR=/var/cache/ccache-sbuild
+export CCACHE_UMASK=002
+export CCACHE_COMPRESS=1
+unset CCACHE_HARDLINK
+export PATH="/usr/lib/ccache:$PATH"
+exec "$@"
