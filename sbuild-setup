@@ -1,9 +1,18 @@
 #!/bin/sh
-# Put it to /var/cache/ccache-sbuild/sbuild-setup,
+# 1. Put this scrip to /var/cache/ccache/sbuild-setup,
 # and append this script to the sbuild command-prefix.
+# example:
+# command-prefix=eatmydata,/var/cache/ccache/sbuild-setup
+# 2. Add the bind mount to sbuild fstab file.
+# at /etc/schroot/sbuild/fstab, add:
+# /var/cache/ccache /var/cache/ccache none rw,bind 0 0
+# 3. change file permission of /var/cache/ccache to 774
+# sudo chmod 0774 /var/cache/ccache
+# sudo chown sbuild:sbuild /var/cache/ccache
 export CCACHE_DIR=/var/cache/ccache-sbuild
 export CCACHE_UMASK=002
-export CCACHE_COMPRESS=1
+export CCACHE_MAXSIZE=64
+unset CCACHE_COMPRESS
 unset CCACHE_HARDLINK
 export PATH="/usr/lib/ccache:$PATH"
 exec "$@"
