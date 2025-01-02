@@ -8,7 +8,8 @@
 *customization: -color
 xterm*termName: xterm-256color
 !xterm*faceName: Operator Mono Light
-xterm*faceName: Cascadia Mono NF:style=Light
+!xterm*faceName: Cascadia Mono NF:style=Light
+xterm*faceName: Monaspace Argon Var ExtraLight:style=Regula
 xterm*faceSize: 17
 xterm*faceSize1: 8
 xterm*faceSize2: 10
