@@ -1,0 +1,76 @@
+#!/bin/bash
+# References:
+# https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#hwaccel-transcode-with-scaling
+# https://trac.ffmpeg.org/wiki/HWAccelIntro#CUDANVENCNVDEC
+set -e
+
+inplace=false
+bitrate="4M"
+cuda=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -i|--inplace)
+      inplace=true
+      shift
+      ;;
+    -b|--bitrate)
+      bitrate="$2"
+      shift 2
+      ;;
+    --cuda)
+      cuda=true
+      shift
+      ;;
+    *)
+      input_file="$1"
+      shift
+      ;;
+  esac
+done
+
+# Check if input file is provided
+if [[ -z "$input_file" ]]; then
+  echo "Error: Input file is required."
+  exit 1
+fi
+
+# Print the parsed values
+echo "Input file: $input_file"
+basename=$(basename "${input_file}")
+echo "Inplace: $inplace"
+echo "Bitrate: $bitrate"
+if test ${cuda} = 'true'; then
+	enc=hevc_nvenc
+	hwflags="-hwaccel_device 0 -hwaccel cuda -hwaccel_output_format cuda"
+	echo "CUDA: True"
+else
+	enc=libx265
+	hwflags=""
+	echo "CUDA: False"
+fi
+
+echo ===== Start Conversion =====
+
+ffmpeg \
+	${hwflags} \
+	-i "${input_file}" \
+	-map_metadata 0 -movflags use_metadata_tags \
+	-c:a copy \
+	-c:v ${enc} -preset slow -b:v ${bitrate} \
+	new_${basename}
+
+echo ===== Stats =====
+original_size=$(stat -c%s "${input_file}")
+new_size=$(stat -c%s "new_${basename}")
+compression_rate=$(echo "scale=2; $new_size / $original_size * 100" | bc)
+
+# Print the results
+echo "   Original size: $original_size bytes"
+echo "        New size: $new_size bytes"
+echo "Compression rate: $compression_rate%"
+
+if test ${inplace} = "true"; then
+	mv -v ${basename} old_${basename}
+	mv -v new_${basename} ${basename}
+fi
