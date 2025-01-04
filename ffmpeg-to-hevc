@@ -57,7 +57,7 @@ ffmpeg \
 	-i "${input_file}" \
 	-map_metadata 0 -movflags use_metadata_tags \
 	-c:a copy \
-	-c:v ${enc} -preset slow -b:v ${bitrate} \
+	-c:v ${enc} -preset medium -b:v ${bitrate} \
 	new_${basename}
 
 echo ===== Stats =====
