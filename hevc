@@ -7,6 +7,7 @@ set -e
 inplace=false
 bitrate="4M"
 cuda=false
+mac=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -20,6 +21,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cuda)
       cuda=true
+      shift
+      ;;
+    --mac)
+      mac=true
       shift
       ;;
     *)
@@ -48,6 +53,13 @@ else
 	enc=libx265
 	hwflags=""
 	echo "CUDA: False"
+fi
+if test ${mac} = 'true'; then
+    enc=hevc_videotoolbox
+    hwflags="-hwaccel videotoolbox"
+    echo "Mac: True"
+else
+    echo "Mac: False"
 fi
 
 echo ===== Start Conversion =====
