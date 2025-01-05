@@ -56,7 +56,7 @@ set fileencodings=ucs-bom,utf-8,cp936
 set fileformats=unix,dos,mac
 set ruler
 
-colorscheme slate
+colorscheme desert
 "colorscheme ron
 
 "set spell
