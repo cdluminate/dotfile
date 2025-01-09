@@ -23,6 +23,9 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+# pipx and uv
+export PATH=${HOME}/.local/bin:${PATH}
+
 # Keyboard Repeat Rate (Critical)
 # https://apple.stackexchange.com/questions/443326/sub-15ms-key-repeat-speed-on-macos-monterey
 # https://apple.stackexchange.com/questions/10467/how-to-increase-keyboard-key-repeat-rate-on-os-x
