@@ -9,6 +9,7 @@ git
 tig
 ripgrep
 htop
+btop
 ipython3
 rsync
 >;
