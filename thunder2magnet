@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+#echo source link is ${1}
+string=$(echo ${1} | sed -e 's@://@ @' | cut -d' ' -f2)
+string=$(echo ${string} | base64 -d)
+string=$(echo ${string} | sed -e 's@^AA@@g' | sed -e 's@ZZ$@@g')
+echo ${string}
+
