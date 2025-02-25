@@ -82,3 +82,5 @@ end
 
 # Disable the "welcome to fish ..." message.
 set -U fish_greeting ""
+
+fzf --fish | source
