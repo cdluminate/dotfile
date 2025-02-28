@@ -8,7 +8,7 @@ export NINJA_STATUS='[38;5;162m[%p %f/%t][0;m '
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
-export BROWSER=w3m
+#export BROWSER=sensible-browser
 export FZF_DEFAULT_COMMAND='fdfind --type file --follow'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export TERM=xterm-256color
