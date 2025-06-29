@@ -22,6 +22,7 @@ alias jl='julia'
 eval "$(/opt/homebrew/bin/brew shellenv)"
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source <(fzf --zsh)
 
 # pipx and uv
 export PATH=${HOME}/.local/bin:${PATH}
