@@ -70,7 +70,7 @@ ffmpeg \
 	-map_metadata 0 -movflags use_metadata_tags \
 	-c:a copy \
 	-c:v ${enc} -preset medium -b:v ${bitrate} \
-	new_${basename}
+	compress_${basename}
 
 echo ===== Stats =====
 case "$(uname -s)" in
@@ -79,7 +79,7 @@ case "$(uname -s)" in
     *)          echo "Unsupported OS"; exit 1;;
 esac
 original_size=$(${stat_cmd} "${input_file}")
-new_size=$(${stat_cmd} "new_${basename}")
+new_size=$(${stat_cmd} "compress_${basename}")
 compression_rate=$(echo "scale=2; $new_size / $original_size * 100" | bc)
 
 # Print the results
@@ -89,5 +89,5 @@ echo "Compression rate: $compression_rate%"
 
 if test ${inplace} = "true"; then
 	mv -v ${basename} old_${basename}
-	mv -v new_${basename} ${basename}
+	mv -v compress_${basename} ${basename}
 fi
