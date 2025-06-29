@@ -73,8 +73,13 @@ ffmpeg \
 	new_${basename}
 
 echo ===== Stats =====
-original_size=$(stat -c%s "${input_file}")
-new_size=$(stat -c%s "new_${basename}")
+case "$(uname -s)" in
+    Linux*)     stat_cmd="stat -c%s";;
+    Darwin*)    stat_cmd="stat -f%z";;
+    *)          echo "Unsupported OS"; exit 1;;
+esac
+original_size=$(${stat_cmd} "${input_file}")
+new_size=$(${stat_cmd} "new_${basename}")
 compression_rate=$(echo "scale=2; $new_size / $original_size * 100" | bc)
 
 # Print the results
