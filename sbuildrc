@@ -4,7 +4,7 @@ $chroot_mode = 'schroot';
 $schroot = 'schroot';
 
 $run_lintian = 1;
-$lintian_opts = '-EviI';
+$lintian_opts = ['-E', '-v', '-i', '-I'];
 
 $run_autopkgtest = 1;
 $autopkgtest_root_args = '';
