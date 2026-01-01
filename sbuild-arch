@@ -5,7 +5,7 @@ if test -z "$(command -v time)"; then
 fi
 arch="${1}"
 shift
-echo sudo sbuild-update -udcar unstable-${arch}-sbuild
-sudo sbuild-update -udcar unstable-${arch}-sbuild
+echo sudo sbuild-update -udcar unstable-${arch}-sbuild --chroot-mode=schroot
+sudo sbuild-update -udcar unstable-${arch}-sbuild --chroot-mode=schroot
 echo time sbuild --no-clean -c unstable-${arch}-sbuild --build=${arch} --arch=${arch} $@
 time sbuild --no-clean -c unstable-${arch}-sbuild --build=${arch} --arch=${arch} $@
