@@ -1,29 +1,90 @@
 #!/usr/bin/env python3
-"""
-Merge PDF files from a specified directory (including subdirectories) into a single PDF.
-"""
 import os
 import argparse
 import io
+import sys
 from pathlib import Path
+from typing import Optional
+
+# Third-party libraries
 from pypdf import PdfWriter, PdfReader
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
+from rich.panel import Panel
 
-def create_title_page(text):
+console = Console()
+
+def register_noto_sans() -> str:
     """
-    Generates a PDF page containing the filename.
-    Note: Standard PDF fonts (Helvetica) may not support Chinese characters.
+    尝试在 Linux 系统路径中查找并注册 Noto Sans CJK/SC 字体。
+    支持 .otf (OpenType) 和 .ttc (TrueType Collection)。
+    """
+    font_name = "NotoSans-SC"
+    
+    # Linux 常见字体路径优先级
+    candidate_paths = [
+        # 1. 用户当前目录 (最优先)
+        Path("./NotoSansSC-Regular.otf"),
+        Path("./NotoSansSC-Regular.ttf"),
+        
+        # 2. Debian/Ubuntu/Arch 系统路径 (.otf)
+        Path("/usr/share/fonts/opentype/noto/NotoSansSC-Regular.otf"),
+        Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttf"), # 常见 CJK 集合
+        Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
+        
+        # 3. 用户字体目录
+        Path(os.path.expanduser("~/.local/share/fonts/NotoSansSC-Regular.otf")),
+    ]
+
+    found_path = None
+    for path in candidate_paths:
+        if path.exists():
+            found_path = path
+            break
+    
+    if found_path:
+        try:
+            # 如果是 .ttc 文件，通常 index 0 是 Sans CJK Regular (或者 SC)
+            # ReportLab 的 TTFont 支持 subfontIndex
+            if found_path.suffix == ".ttc":
+                # 注意: reportlab 读取 ttc 需要指定 subfontIndex
+                pdfmetrics.registerFont(TTFont(font_name, found_path, subfontIndex=0))
+            else:
+                pdfmetrics.registerFont(TTFont(font_name, found_path))
+                
+            console.print(f"[green]✓ Loaded Font:[/green] {found_path}")
+            return font_name
+        except Exception as e:
+            console.print(f"[yellow]! Failed to load font {found_path}: {e}[/yellow]")
+    
+    console.print("[yellow]! Noto Sans CJK not found. Falling back to Helvetica (No Chinese support).[/yellow]")
+    console.print("[dim]Tip: sudo apt install fonts-noto-cjk[/dim]")
+    return "Helvetica"
+
+# 全局注册字体
+CURRENT_FONT = register_noto_sans()
+
+def create_title_page(text: str) -> PdfReader:
+    """
+    创建一个包含文件名的 PDF 页面。
     """
     packet = io.BytesIO()
     can = canvas.Canvas(packet, pagesize=letter)
     width, height = letter
     
-    # Use standard font
-    can.setFont("Helvetica", 12)
+    can.setFont(CURRENT_FONT, 12)
     
-    # Center the text
-    text_width = can.stringWidth(text, "Helvetica", 12)
+    # 居中计算
+    try:
+        text_width = can.stringWidth(text, CURRENT_FONT, 12)
+    except Exception:
+        # 如果字体不支持某些字符，可能会抛错，回退计算
+        text_width = len(text) * 6
+        
     x = (width - text_width) / 2
     y = height / 2
     
@@ -34,84 +95,102 @@ def create_title_page(text):
     packet.seek(0)
     return PdfReader(packet)
 
-def merge_pdfs(source_dir, output_file, verbose=False):
+def merge_pdfs(source_dir: str, output_file: str):
     writer = PdfWriter()
     root_path = Path(source_dir)
+    output_path = Path(output_file)
     
     if not root_path.exists():
-        print(f"Error: Directory '{source_dir}' not found.")
-        return
+        console.print(f"[bold red]Error:[/bold red] Directory '{source_dir}' does not exist.")
+        sys.exit(1)
 
-    # 1. Find and Sort
-    # rglob('*') recursively finds files. We filter for .pdf case-insensitively
-    all_files = [f for f in root_path.rglob("*") if f.suffix.lower() == '.pdf']
-    
-    # Sort by filename (YYYY-MM-DD ensures chronological order)
-    sorted_files = sorted(all_files, key=lambda f: f.name)
-    
+    # 1. 查找并排序文件
+    with console.status("[bold green]Scanning directory...[/bold green]"):
+        # 递归查找所有 .pdf 文件
+        all_files = [f for f in root_path.rglob("*") if f.suffix.lower() == '.pdf']
+        # 按文件名排序 (YYYY-MM-DD 格式保证了时间顺序)
+        sorted_files = sorted(all_files, key=lambda f: f.name)
+        
+        # 移除输出文件自身（如果它也在这个目录里），防止无限递归
+        sorted_files = [f for f in sorted_files if f.resolve() != output_path.resolve()]
+
     if not sorted_files:
-        print("No PDF files found in the specified directory.")
+        console.print("[yellow]No PDF files found to merge.[/yellow]")
         return
 
-    print(f"Found {len(sorted_files)} PDFs. Merging...")
+    console.print(Panel(f"Found [bold cyan]{len(sorted_files)}[/bold cyan] PDF files in [bold]{source_dir}[/bold]", title="Scan Complete"))
 
-    # 2. Process Files
-    count = 0
-    for pdf_file in sorted_files:
-        # Skip the output file if it's in the same directory to avoid infinite loops
-        if pdf_file.name == Path(output_file).name:
-            continue
-
-        if verbose:
-            print(f"Processing: {pdf_file.name}")
-
-        try:
-            # Add Title Page
-            title_page = create_title_page(pdf_file.name)
-            writer.add_page(title_page.pages[0])
-
-            # Add Content
-            reader = PdfReader(pdf_file)
-            for page in reader.pages:
-                writer.add_page(page)
-            
-            count += 1
-        except Exception as e:
-            print(f"Warning: Could not process {pdf_file.name}. Reason: {e}")
-
-    # 3. Write Output
-    with open(output_file, "wb") as out_f:
-        writer.write(out_f)
+    # 2. 处理合并
+    success_count = 0
     
-    print(f"Done! Merged {count} files into '{output_file}'")
+    # 定义 Rich 进度条布局
+    progress_columns = [
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn(),
+    ]
+
+    with Progress(*progress_columns, console=console) as progress:
+        task = progress.add_task("[cyan]Merging PDFs...", total=len(sorted_files))
+        
+        for pdf_file in sorted_files:
+            progress.update(task, description=f"[cyan]Processing: {pdf_file.name}[/cyan]")
+            
+            try:
+                # A. 添加标题页
+                title_page = create_title_page(pdf_file.name)
+                writer.add_page(title_page.pages[0])
+
+                # B. 添加原始内容
+                reader = PdfReader(pdf_file)
+                # 将该文件的所有页面加入
+                for page in reader.pages:
+                    writer.add_page(page)
+                
+                success_count += 1
+                
+            except Exception as e:
+                console.print(f"[red]Error processing {pdf_file.name}: {e}[/red]")
+            
+            progress.advance(task)
+
+    # 3. 写入文件
+    console.print(f"[dim]Writing output to {output_file}...[/dim]")
+    try:
+        with open(output_file, "wb") as out_f:
+            writer.write(out_f)
+        
+        console.print(Panel(
+            f"[bold green]Success![/bold green]\n"
+            f"Merged {success_count} files.\n"
+            f"Output: [underline]{output_file}[/underline]",
+            border_style="green"
+        ))
+    except Exception as e:
+        console.print(f"[bold red]Failed to write output file:[/bold red] {e}")
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Recursively merge PDF files from a directory, sorted by date (filename)."
+        description="Recursively merge PDFs with date-sorting and title pages (Rich UI edition)."
     )
     
     parser.add_argument(
         "directory", 
         nargs="?", 
         default=".", 
-        help="The directory to search for PDFs (default: current directory)"
+        help="Root directory to search for PDFs (default: current dir)"
     )
     
     parser.add_argument(
         "-o", "--output", 
         default="merged_output.pdf", 
-        help="The name of the final merged PDF file (default: merged_output.pdf)"
-    )
-    
-    parser.add_argument(
-        "-v", "--verbose", 
-        action="store_true", 
-        help="Print each filename as it is processed"
+        help="Output filename (default: merged_output.pdf)"
     )
 
     args = parser.parse_args()
-    
-    merge_pdfs(args.directory, args.output, args.verbose)
+    merge_pdfs(args.directory, args.output)
 
 if __name__ == "__main__":
     main()
