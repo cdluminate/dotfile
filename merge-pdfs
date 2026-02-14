@@ -3,8 +3,8 @@ import os
 import argparse
 import io
 import sys
+import re  # 新增：用于正则匹配
 from pathlib import Path
-from typing import Optional
 
 # Third-party libraries
 from pypdf import PdfWriter, PdfReader
@@ -18,77 +18,79 @@ from rich.panel import Panel
 
 console = Console()
 
-def register_noto_sans() -> str:
+def register_chinese_font() -> str:
     """
-    尝试在 Linux 系统路径中查找并注册 Noto Sans CJK/SC 字体。
-    支持 .otf (OpenType) 和 .ttc (TrueType Collection)。
+    尝试注册一个兼容 ReportLab (TrueType 轮廓) 的中文字体。
     """
-    font_name = "NotoSans-SC"
+    font_name = "ChineseFont"
     
-    # Linux 常见字体路径优先级
     candidate_paths = [
-        # 1. 用户当前目录 (最优先)
-        Path("./NotoSansSC-Regular.otf"),
         Path("./NotoSansSC-Regular.ttf"),
-        
-        # 2. Debian/Ubuntu/Arch 系统路径 (.otf)
-        Path("/usr/share/fonts/opentype/noto/NotoSansSC-Regular.otf"),
-        Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttf"), # 常见 CJK 集合
+        Path("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"),
+        Path("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"),
         Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
-        
-        # 3. 用户字体目录
-        Path(os.path.expanduser("~/.local/share/fonts/NotoSansSC-Regular.otf")),
+        Path("/usr/share/fonts/truetype/noto/NotoSansSC-Regular.ttf"),
+        Path(os.path.expanduser("~/.local/share/fonts/NotoSansSC-Regular.ttf")),
     ]
 
-    found_path = None
     for path in candidate_paths:
         if path.exists():
-            found_path = path
-            break
-    
-    if found_path:
-        try:
-            # 如果是 .ttc 文件，通常 index 0 是 Sans CJK Regular (或者 SC)
-            # ReportLab 的 TTFont 支持 subfontIndex
-            if found_path.suffix == ".ttc":
-                # 注意: reportlab 读取 ttc 需要指定 subfontIndex
-                pdfmetrics.registerFont(TTFont(font_name, found_path, subfontIndex=0))
-            else:
-                pdfmetrics.registerFont(TTFont(font_name, found_path))
+            try:
+                if path.suffix == ".ttc":
+                    pdfmetrics.registerFont(TTFont(font_name, path, subfontIndex=0))
+                else:
+                    pdfmetrics.registerFont(TTFont(font_name, path))
                 
-            console.print(f"[green]✓ Loaded Font:[/green] {found_path}")
-            return font_name
-        except Exception as e:
-            console.print(f"[yellow]! Failed to load font {found_path}: {e}[/yellow]")
+                console.print(f"[green]✓ Loaded Font:[/green] {path}")
+                return font_name
+            except Exception as e:
+                console.print(f"[dim yellow]! Skipped incompatible font {path.name}: {e}[/dim yellow]")
+                continue
     
-    console.print("[yellow]! Noto Sans CJK not found. Falling back to Helvetica (No Chinese support).[/yellow]")
-    console.print("[dim]Tip: sudo apt install fonts-noto-cjk[/dim]")
+    console.print("[bold red]! No compatible Chinese font found.[/bold red]")
+    console.print("[yellow]Tip: sudo apt install fonts-wqy-microhei[/yellow]")
     return "Helvetica"
 
-# 全局注册字体
-CURRENT_FONT = register_noto_sans()
+CURRENT_FONT = register_chinese_font()
 
 def create_title_page(text: str) -> PdfReader:
     """
-    创建一个包含文件名的 PDF 页面。
+    创建封面页：大号粗体，上下横线。
+    使用“几何偏移”法模拟粗体。
     """
     packet = io.BytesIO()
     can = canvas.Canvas(packet, pagesize=letter)
     width, height = letter
     
-    can.setFont(CURRENT_FONT, 12)
+    # --- 样式配置 ---
+    font_size = 24
+    line_width = 2
+    line_margin = 80
     
-    # 居中计算
+    can.setFont(CURRENT_FONT, font_size)
+    
     try:
-        text_width = can.stringWidth(text, CURRENT_FONT, 12)
-    except Exception:
-        # 如果字体不支持某些字符，可能会抛错，回退计算
-        text_width = len(text) * 6
+        text_width = can.stringWidth(text, CURRENT_FONT, font_size)
+    except:
+        text_width = len(text) * font_size
         
-    x = (width - text_width) / 2
-    y = height / 2
+    x_text = (width - text_width) / 2
+    y_text = height / 2
     
-    can.drawString(x, y, text)
+    # 绘制伪粗体 (4次偏移)
+    offset = 0.5 
+    can.drawString(x_text, y_text, text)
+    can.drawString(x_text + offset, y_text, text)
+    can.drawString(x_text, y_text + offset, text)
+    can.drawString(x_text + offset, y_text + offset, text)
+    
+    # 绘制上下横线
+    can.setLineWidth(line_width)
+    line_top_y = y_text + font_size + 10
+    line_bottom_y = y_text - 15
+    can.line(line_margin, line_top_y, width - line_margin, line_top_y)
+    can.line(line_margin, line_bottom_y, width - line_margin, line_bottom_y)
+    
     can.showPage()
     can.save()
     
@@ -104,26 +106,49 @@ def merge_pdfs(source_dir: str, output_file: str):
         console.print(f"[bold red]Error:[/bold red] Directory '{source_dir}' does not exist.")
         sys.exit(1)
 
-    # 1. 查找并排序文件
-    with console.status("[bold green]Scanning directory...[/bold green]"):
-        # 递归查找所有 .pdf 文件
-        all_files = [f for f in root_path.rglob("*") if f.suffix.lower() == '.pdf']
-        # 按文件名排序 (YYYY-MM-DD 格式保证了时间顺序)
-        sorted_files = sorted(all_files, key=lambda f: f.name)
+    # --- 1. 扫描与过滤 ---
+    with console.status("[bold green]Scanning and Filtering...[/bold green]"):
+        # 正则表达式：匹配 YYYY-MM-DD 开头
+        # ^ 表示开头, \d{4} 表示4位数字, \d{2} 表示2位数字
+        date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}")
         
-        # 移除输出文件自身（如果它也在这个目录里），防止无限递归
-        sorted_files = [f for f in sorted_files if f.resolve() != output_path.resolve()]
+        all_pdfs = [f for f in root_path.rglob("*") if f.suffix.lower() == '.pdf']
+        
+        valid_files = []
+        skipped_count = 0
+        
+        for f in all_pdfs:
+            # 排除输出文件自己
+            if f.resolve() == output_path.resolve():
+                continue
+                
+            # 核心过滤逻辑：只有文件名符合日期格式才加入
+            if date_pattern.match(f.name):
+                valid_files.append(f)
+            else:
+                skipped_count += 1
 
+        # 排序
+        sorted_files = sorted(valid_files, key=lambda f: f.name)
+
+    # --- 2. 汇报扫描结果 ---
     if not sorted_files:
-        console.print("[yellow]No PDF files found to merge.[/yellow]")
+        console.print("[yellow]No valid date-formatted PDF files found (YYYY-MM-DD...).[/yellow]")
+        if skipped_count > 0:
+            console.print(f"[dim]Skipped {skipped_count} files that didn't match the date pattern.[/dim]")
         return
 
-    console.print(Panel(f"Found [bold cyan]{len(sorted_files)}[/bold cyan] PDF files in [bold]{source_dir}[/bold]", title="Scan Complete"))
+    summary_panel = Panel(
+        f"Valid Date Files: [bold cyan]{len(sorted_files)}[/bold cyan]\n"
+        f"Skipped Files:    [bold yellow]{skipped_count}[/bold yellow]\n"
+        f"Source Dir:       [bold]{source_dir}[/bold]", 
+        title="Scan Complete"
+    )
+    console.print(summary_panel)
 
-    # 2. 处理合并
+    # --- 3. 处理合并 ---
     success_count = 0
     
-    # 定义 Rich 进度条布局
     progress_columns = [
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -139,13 +164,12 @@ def merge_pdfs(source_dir: str, output_file: str):
             progress.update(task, description=f"[cyan]Processing: {pdf_file.name}[/cyan]")
             
             try:
-                # A. 添加标题页
+                # 添加封面
                 title_page = create_title_page(pdf_file.name)
                 writer.add_page(title_page.pages[0])
 
-                # B. 添加原始内容
+                # 添加内容
                 reader = PdfReader(pdf_file)
-                # 将该文件的所有页面加入
                 for page in reader.pages:
                     writer.add_page(page)
                 
@@ -156,7 +180,7 @@ def merge_pdfs(source_dir: str, output_file: str):
             
             progress.advance(task)
 
-    # 3. 写入文件
+    # --- 4. 写入文件 ---
     console.print(f"[dim]Writing output to {output_file}...[/dim]")
     try:
         with open(output_file, "wb") as out_f:
@@ -172,23 +196,9 @@ def merge_pdfs(source_dir: str, output_file: str):
         console.print(f"[bold red]Failed to write output file:[/bold red] {e}")
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Recursively merge PDFs with date-sorting and title pages (Rich UI edition)."
-    )
-    
-    parser.add_argument(
-        "directory", 
-        nargs="?", 
-        default=".", 
-        help="Root directory to search for PDFs (default: current dir)"
-    )
-    
-    parser.add_argument(
-        "-o", "--output", 
-        default="merged_output.pdf", 
-        help="Output filename (default: merged_output.pdf)"
-    )
-
+    parser = argparse.ArgumentParser(description="Recursively merge date-prefixed PDFs (YYYY-MM-DD).")
+    parser.add_argument("directory", nargs="?", default=".", help="Root directory")
+    parser.add_argument("-o", "--output", default="merged_output.pdf", help="Output filename")
     args = parser.parse_args()
     merge_pdfs(args.directory, args.output)
 
