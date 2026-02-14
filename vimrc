@@ -179,7 +179,9 @@ let &t_EI.="\e[1 q" "EI = NORMAL mode (ELSE)
 "  6 -> solid vertical bar
 "
 "
-colorscheme monokai
+"colorscheme monokai
 "set spell
 
 "set foldmethod=indent
+
+:setlocal noautoindent nosmartindent nocindent indentexpr=

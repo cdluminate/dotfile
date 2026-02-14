@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""
+Merge PDF files from a specified directory (including subdirectories) into a single PDF.
+"""
+import os
+import argparse
+import io
+from pathlib import Path
+from pypdf import PdfWriter, PdfReader
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+
+def create_title_page(text):
+    """
+    Generates a PDF page containing the filename.
+    Note: Standard PDF fonts (Helvetica) may not support Chinese characters.
+    """
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet, pagesize=letter)
+    width, height = letter
+    
+    # Use standard font
+    can.setFont("Helvetica", 12)
+    
+    # Center the text
+    text_width = can.stringWidth(text, "Helvetica", 12)
+    x = (width - text_width) / 2
+    y = height / 2
+    
+    can.drawString(x, y, text)
+    can.showPage()
+    can.save()
+    
+    packet.seek(0)
+    return PdfReader(packet)
+
+def merge_pdfs(source_dir, output_file, verbose=False):
+    writer = PdfWriter()
+    root_path = Path(source_dir)
+    
+    if not root_path.exists():
+        print(f"Error: Directory '{source_dir}' not found.")
+        return
+
+    # 1. Find and Sort
+    # rglob('*') recursively finds files. We filter for .pdf case-insensitively
+    all_files = [f for f in root_path.rglob("*") if f.suffix.lower() == '.pdf']
+    
+    # Sort by filename (YYYY-MM-DD ensures chronological order)
+    sorted_files = sorted(all_files, key=lambda f: f.name)
+    
+    if not sorted_files:
+        print("No PDF files found in the specified directory.")
+        return
+
+    print(f"Found {len(sorted_files)} PDFs. Merging...")
+
+    # 2. Process Files
+    count = 0
+    for pdf_file in sorted_files:
+        # Skip the output file if it's in the same directory to avoid infinite loops
+        if pdf_file.name == Path(output_file).name:
+            continue
+
+        if verbose:
+            print(f"Processing: {pdf_file.name}")
+
+        try:
+            # Add Title Page
+            title_page = create_title_page(pdf_file.name)
+            writer.add_page(title_page.pages[0])
+
+            # Add Content
+            reader = PdfReader(pdf_file)
+            for page in reader.pages:
+                writer.add_page(page)
+            
+            count += 1
+        except Exception as e:
+            print(f"Warning: Could not process {pdf_file.name}. Reason: {e}")
+
+    # 3. Write Output
+    with open(output_file, "wb") as out_f:
+        writer.write(out_f)
+    
+    print(f"Done! Merged {count} files into '{output_file}'")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Recursively merge PDF files from a directory, sorted by date (filename)."
+    )
+    
+    parser.add_argument(
+        "directory", 
+        nargs="?", 
+        default=".", 
+        help="The directory to search for PDFs (default: current directory)"
+    )
+    
+    parser.add_argument(
+        "-o", "--output", 
+        default="merged_output.pdf", 
+        help="The name of the final merged PDF file (default: merged_output.pdf)"
+    )
+    
+    parser.add_argument(
+        "-v", "--verbose", 
+        action="store_true", 
+        help="Print each filename as it is processed"
+    )
+
+    args = parser.parse_args()
+    
+    merge_pdfs(args.directory, args.output, args.verbose)
+
+if __name__ == "__main__":
+    main()

@@ -9,7 +9,8 @@
 xterm*termName: xterm-256color
 !xterm*faceName: Operator Mono Light
 !xterm*faceName: Cascadia Mono NF:style=Light
-xterm*faceName: Ubuntu Mono:style=Regular
+!xterm*faceName: Ubuntu Mono:style=Regular
+xterm*faceName: Fira Mono:style=Regular
 !xterm*faceName: Monaspace Argon Var ExtraLight:style=Regula
 !xterm*faceName: CommitMono
 xterm*faceSize: 17
