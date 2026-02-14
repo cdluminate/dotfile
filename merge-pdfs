@@ -3,7 +3,7 @@ import os
 import argparse
 import io
 import sys
-import re  # 新增：用于正则匹配
+import re
 from pathlib import Path
 
 # Third-party libraries
@@ -18,15 +18,15 @@ from rich.panel import Panel
 
 console = Console()
 
+# --- 1. 字体注册 (保持最强兼容性) ---
 def register_chinese_font() -> str:
     """
-    尝试注册一个兼容 ReportLab (TrueType 轮廓) 的中文字体。
+    尝试注册一个中文字体，优先寻找 Debian/Linux 系统字体。
     """
     font_name = "ChineseFont"
-    
     candidate_paths = [
         Path("./NotoSansSC-Regular.ttf"),
-        Path("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"),
+        Path("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"), # Debian 推荐
         Path("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"),
         Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
         Path("/usr/share/fonts/truetype/noto/NotoSansSC-Regular.ttf"),
@@ -40,51 +40,88 @@ def register_chinese_font() -> str:
                     pdfmetrics.registerFont(TTFont(font_name, path, subfontIndex=0))
                 else:
                     pdfmetrics.registerFont(TTFont(font_name, path))
-                
-                console.print(f"[green]✓ Loaded Font:[/green] {path}")
                 return font_name
-            except Exception as e:
-                console.print(f"[dim yellow]! Skipped incompatible font {path.name}: {e}[/dim yellow]")
+            except Exception:
                 continue
-    
-    console.print("[bold red]! No compatible Chinese font found.[/bold red]")
-    console.print("[yellow]Tip: sudo apt install fonts-wqy-microhei[/yellow]")
-    return "Helvetica"
+    return "Helvetica" # 回退
 
 CURRENT_FONT = register_chinese_font()
 
-def create_title_page(text: str) -> PdfReader:
+# --- 2. 页面生成函数 ---
+
+def create_simple_list_page(file_list: list) -> PdfReader:
     """
-    创建封面页：大号粗体，上下横线。
-    使用“几何偏移”法模拟粗体。
+    生成一个简单的纯文本文件列表，作为 PDF 的开头。
+    如果列表很长，自动分页。
     """
     packet = io.BytesIO()
     can = canvas.Canvas(packet, pagesize=letter)
     width, height = letter
     
-    # --- 样式配置 ---
+    # 配置
+    margin_top = 50
+    margin_left = 50
+    line_height = 20
+    current_y = height - margin_top
+    
+    # 标题
+    can.setFont(CURRENT_FONT, 18)
+    can.drawString(margin_left, current_y, "文件列表 (File List)")
+    current_y -= 40 # 标题下方留白
+    
+    # 正文内容
+    can.setFont(CURRENT_FONT, 11)
+    
+    for idx, f_path in enumerate(file_list):
+        # 检查页面空间，如果不够了就翻页
+        if current_y < 50:
+            can.showPage()
+            current_y = height - 50
+            can.setFont(CURRENT_FONT, 11)
+            
+        # 绘制文件名 (去掉 .pdf 后缀更美观)
+        clean_name = f_path.name.replace('.pdf', '')
+        line_text = f"{idx + 1}. {clean_name}"
+        
+        can.drawString(margin_left, current_y, line_text)
+        current_y -= line_height
+        
+    can.showPage()
+    can.save()
+    packet.seek(0)
+    return PdfReader(packet)
+
+def create_separator_page(text: str) -> PdfReader:
+    """
+    生成分隔页：大号粗体，上下横线。
+    """
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet, pagesize=letter)
+    width, height = letter
+    
+    # 样式
     font_size = 24
     line_width = 2
     line_margin = 80
     
     can.setFont(CURRENT_FONT, font_size)
     
+    # 计算居中
     try:
         text_width = can.stringWidth(text, CURRENT_FONT, font_size)
     except:
         text_width = len(text) * font_size
-        
     x_text = (width - text_width) / 2
     y_text = height / 2
     
-    # 绘制伪粗体 (4次偏移)
+    # 伪粗体绘制 (偏移法)
     offset = 0.5 
     can.drawString(x_text, y_text, text)
     can.drawString(x_text + offset, y_text, text)
     can.drawString(x_text, y_text + offset, text)
     can.drawString(x_text + offset, y_text + offset, text)
     
-    # 绘制上下横线
+    # 上下横线
     can.setLineWidth(line_width)
     line_top_y = y_text + font_size + 10
     line_bottom_y = y_text - 15
@@ -93,9 +130,10 @@ def create_title_page(text: str) -> PdfReader:
     
     can.showPage()
     can.save()
-    
     packet.seek(0)
     return PdfReader(packet)
+
+# --- 3. 主逻辑 ---
 
 def merge_pdfs(source_dir: str, output_file: str):
     writer = PdfWriter()
@@ -106,81 +144,66 @@ def merge_pdfs(source_dir: str, output_file: str):
         console.print(f"[bold red]Error:[/bold red] Directory '{source_dir}' does not exist.")
         sys.exit(1)
 
-    # --- 1. 扫描与过滤 ---
-    with console.status("[bold green]Scanning and Filtering...[/bold green]"):
-        # 正则表达式：匹配 YYYY-MM-DD 开头
-        # ^ 表示开头, \d{4} 表示4位数字, \d{2} 表示2位数字
-        date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}")
-        
+    # --- Step 1: 扫描与过滤 ---
+    date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}")
+    files_to_process = []
+    
+    with console.status("[bold green]Scanning directory...[/bold green]"):
         all_pdfs = [f for f in root_path.rglob("*") if f.suffix.lower() == '.pdf']
         
-        valid_files = []
-        skipped_count = 0
-        
         for f in all_pdfs:
-            # 排除输出文件自己
-            if f.resolve() == output_path.resolve():
-                continue
-                
-            # 核心过滤逻辑：只有文件名符合日期格式才加入
+            # 跳过输出文件自己
+            if f.resolve() == output_path.resolve(): continue
+            # 正则过滤
             if date_pattern.match(f.name):
-                valid_files.append(f)
-            else:
-                skipped_count += 1
+                files_to_process.append(f)
+        
+        # 按文件名排序
+        files_to_process.sort(key=lambda f: f.name)
 
-        # 排序
-        sorted_files = sorted(valid_files, key=lambda f: f.name)
-
-    # --- 2. 汇报扫描结果 ---
-    if not sorted_files:
-        console.print("[yellow]No valid date-formatted PDF files found (YYYY-MM-DD...).[/yellow]")
-        if skipped_count > 0:
-            console.print(f"[dim]Skipped {skipped_count} files that didn't match the date pattern.[/dim]")
+    if not files_to_process:
+        console.print("[yellow]No valid 'YYYY-MM-DD' PDF files found.[/yellow]")
         return
 
-    summary_panel = Panel(
-        f"Valid Date Files: [bold cyan]{len(sorted_files)}[/bold cyan]\n"
-        f"Skipped Files:    [bold yellow]{skipped_count}[/bold yellow]\n"
-        f"Source Dir:       [bold]{source_dir}[/bold]", 
-        title="Scan Complete"
-    )
-    console.print(summary_panel)
+    # --- Step 2: 生成列表页 (TOC) ---
+    console.print(f"Found [cyan]{len(files_to_process)}[/cyan] files. Generating list...")
+    try:
+        toc_reader = create_simple_list_page(files_to_process)
+        for page in toc_reader.pages:
+            writer.add_page(page)
+    except Exception as e:
+        console.print(f"[red]Error creating list page: {e}[/red]")
 
-    # --- 3. 处理合并 ---
-    success_count = 0
-    
+    # --- Step 3: 合并文件 ---
     progress_columns = [
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
         TaskProgressColumn(),
-        TimeRemainingColumn(),
     ]
 
     with Progress(*progress_columns, console=console) as progress:
-        task = progress.add_task("[cyan]Merging PDFs...", total=len(sorted_files))
+        task = progress.add_task("[cyan]Merging files...", total=len(files_to_process))
         
-        for pdf_file in sorted_files:
-            progress.update(task, description=f"[cyan]Processing: {pdf_file.name}[/cyan]")
+        for pdf_file in files_to_process:
+            progress.update(task, description=f"Adding: {pdf_file.name}")
             
             try:
-                # 添加封面
-                title_page = create_title_page(pdf_file.name)
-                writer.add_page(title_page.pages[0])
-
-                # 添加内容
+                # A. 添加分隔页
+                sep_page = create_separator_page(pdf_file.name)
+                writer.add_page(sep_page.pages[0])
+                
+                # B. 添加内容
                 reader = PdfReader(pdf_file)
                 for page in reader.pages:
                     writer.add_page(page)
-                
-                success_count += 1
-                
+                    
             except Exception as e:
                 console.print(f"[red]Error processing {pdf_file.name}: {e}[/red]")
             
             progress.advance(task)
 
-    # --- 4. 写入文件 ---
+    # --- Step 4: 保存 ---
     console.print(f"[dim]Writing output to {output_file}...[/dim]")
     try:
         with open(output_file, "wb") as out_f:
@@ -188,15 +211,15 @@ def merge_pdfs(source_dir: str, output_file: str):
         
         console.print(Panel(
             f"[bold green]Success![/bold green]\n"
-            f"Merged {success_count} files.\n"
+            f"Merged [bold]{len(files_to_process)}[/bold] files.\n"
             f"Output: [underline]{output_file}[/underline]",
             border_style="green"
         ))
     except Exception as e:
-        console.print(f"[bold red]Failed to write output file:[/bold red] {e}")
+        console.print(f"[bold red]Failed to save file:[/bold red] {e}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Recursively merge date-prefixed PDFs (YYYY-MM-DD).")
+    parser = argparse.ArgumentParser(description="Merge PDFs with a simple file list at the beginning.")
     parser.add_argument("directory", nargs="?", default=".", help="Root directory")
     parser.add_argument("-o", "--output", default="merged_output.pdf", help="Output filename")
     args = parser.parse_args()
