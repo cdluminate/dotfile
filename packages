@@ -15,8 +15,6 @@ rsync
 >;
 
 my @packages= qw<
-mate-tweak
-solaar-gnome3
 aptitude
 arandr
 aria2
@@ -106,10 +104,12 @@ lshw
 lsof
 ltrace
 lyx
+mate-tweak
 materia-gtk-theme
 mosh
 mtr
 mupdf
+mutagen
 mutt
 ncdu
 netsed
@@ -149,6 +149,7 @@ sed
 shorewall
 smartmontools
 snort
+solaar-gnome3
 source-hightlight
 spyder3
 sqlite3
@@ -200,6 +201,7 @@ xonsh
 xrandr
 yakuake
 yapf3
+yazi
 you-get
 youtube-dl
 zfsnap
