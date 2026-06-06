@@ -1,18 +1,8 @@
-#!/usr/bin/perl6
-my @core_pacakges= qw<
-vim
-fish
-zsh
-ranger
-git
-tig
-ripgrep
-htop
-btop
-rsync
->;
+#!/usr/bin/perl
+use strict;
+use warnings;
 
-my @packages= qw<
+my @packages = qw(
 alacritty
 arandr
 aria2
@@ -132,7 +122,6 @@ pypy3
 python3-ipdb
 qemu
 qtqr
-rakudo
 ranger
 redshift-gtk
 retext
@@ -204,12 +193,14 @@ zfsutils-linux
 zsh
 zssh
 zstd
->;
-say "Checking status of ", @packages.elems, " packages...";
-for @packages -> $pkg {
-	if qqx!dpkg -s $pkg 2>/dev/null | grep Status! ~~ /installed/ {
-		say "OK: $pkg";
-	} else {
-		say "--: $pkg";
-	}
+);
+
+print "Checking status of ", scalar @packages, " packages...\n";
+foreach my $pkg (@packages) {
+    my $status = `dpkg -s $pkg 2>/dev/null | grep Status`;
+    if ($status && $status =~ /installed/) {
+        print "OK: $pkg\n";
+    } else {
+        print "--: $pkg\n";
+    }
 }

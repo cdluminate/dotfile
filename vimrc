@@ -144,8 +144,6 @@ func! CompileRun()
 		exec "!python3 %"
 	elseif &filetype == 'perl'
 		exec "!perl %"
-	elseif &filetype == 'perl6'
-		exec "!perl6 %"
 	elseif &filetype == 'html'
 		exec "!firefox % &"
 	elseif &filetype == 'go'
