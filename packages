@@ -14,12 +14,6 @@ rsync
 
 my @packages= qw<
 alacritty
-ghostty
-debspawn
-ipython3
-yazi
-cline
-pi_ai_harness
 arandr
 aria2
 avfs
@@ -32,6 +26,7 @@ build-essential
 busybox-static
 ccache
 chafa
+cline
 clonezilla
 codespell
 compton
@@ -40,6 +35,7 @@ cryptsetup
 debhelper
 debmake
 debmirror
+debspawn
 devscripts
 dmenu
 dnsutils
@@ -71,6 +67,7 @@ fossil
 freeplane
 fzf
 gdb
+ghostty
 git
 git-buildpackage
 git-diff-highlight
@@ -124,6 +121,7 @@ openshot
 orchis-gtk-theme
 p7zip
 pandoc
+pi_ai_harness
 pigz
 plank
 pppoeconf
@@ -199,6 +197,7 @@ xonsh
 xrandr
 yakuake
 yapf3
+yazi
 yazi
 zfsnap
 zfsutils-linux
