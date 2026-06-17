@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 my @packages = qw(
+linux-cpupower
 alacritty
 arandr
 aria2
@@ -19,7 +20,7 @@ chafa
 cline
 clonezilla
 codespell
-compton
+picom
 copyq
 cryptsetup
 debhelper
@@ -31,7 +32,6 @@ dmenu
 dnsutils
 docker.io
 dput-ng
-dstat
 dunst
 dwm
 eatmydata
@@ -39,8 +39,8 @@ endlessh
 fail2ban
 fatrace
 fbi
-fcitx
-fcitx-sunpinyin
+fcitx5
+fcitx5-pinyin
 fdfind
 feh
 ffmpeg
@@ -72,7 +72,6 @@ grc
 guake
 gucharmap
 gufw
-guidedog
 hostapd
 htop
 hugo
@@ -83,7 +82,6 @@ ipe
 ipython3
 jupyter-notebook
 keynav
-laptop-mode-tools
 less
 lftp
 libblis-dev
@@ -139,7 +137,6 @@ smartmontools
 snort
 solaar-gnome3
 source-hightlight
-spyder3
 sqlite3
 sshfs
 strace
@@ -187,7 +184,6 @@ xonsh
 xrandr
 yakuake
 yapf3
-yazi
 yazi
 zfsnap
 zfsutils-linux
