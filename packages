@@ -50,9 +50,10 @@ firmware-linux
 fish
 flameshot
 fontforge
-fonts-fantasque-sans
+fonts-cascadia-code
 fonts-firacode
-fonts-monaco
+fonts-monaspace
+fonts-monolisa
 fossil
 freeplane
 fzf
