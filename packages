@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 my @packages = qw(
-linux-cpupower
 alacritty
 arandr
 aria2
@@ -20,7 +19,6 @@ chafa
 cline
 clonezilla
 codespell
-picom
 copyq
 cryptsetup
 debhelper
@@ -50,10 +48,15 @@ firmware-linux
 fish
 flameshot
 fontforge
+fonts-agave
 fonts-cascadia-code
+fonts-fantasque-sans-mono
 fonts-firacode
+fonts-jetbrains-mono
+fonts-maple
 fonts-monaspace
 fonts-monolisa
+fonts-ubuntu-mono
 fossil
 freeplane
 fzf
@@ -86,6 +89,7 @@ less
 lftp
 libblis-dev
 libblis64-dev
+linux-cpupower
 linux-perf
 lm-sensors
 lshw
@@ -111,6 +115,7 @@ orchis-gtk-theme
 p7zip
 pandoc
 pi_ai_harness
+picom
 pigz
 plank
 pppoeconf
