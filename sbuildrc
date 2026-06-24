@@ -1,10 +1,15 @@
+# https://wiki.debian.org/sbuild
 # 1. Prepare
+# sudo apt install sbuild mmdebstrap piuparts lintian autopkgtest
 # mkdir -p ~/.cache/sbuild
 # mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-amd64.tar.zst http://t490/
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-arm64.tar.zst http://t490/
+#
 # 2. Copy this config file to ~/.sbuildrc
 # 3. build package
 # sbuild --no-clean -c unstable-amd64 --build amd64 --arch amd64 .
 $chroot_mode = 'unshare';
+$unshare_tmpdir_template = '~/.cache/sbuild/tmp.sbuild.XXXXXXXXXX'
 
 $external_commands = { "build-failed-commands" => [ [ '%SBUILD_SHELL' ] ] };
 
@@ -14,6 +19,7 @@ if ($distribution eq 'unstable') {
 
 $build_environment ={
   "LD_PRELOAD" => "/usr/lib/x86_64-linux-gnu/libeatmydata.so"
+#  "LD_PRELOAD" => "/usr/lib/aarch64-linux-gnu/libeatmydata.so"
 };
 
 $run_lintian = 1;
