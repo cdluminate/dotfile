@@ -1,16 +1,27 @@
-# example for ~/.sbuildrc.  (Also see /etc/sbuild/sbuild.conf.)  -*- Perl -*-
+# 1. Prepare
+# mkdir -p ~/.cache/sbuild
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-amd64.tar.zst http://t490/
+# 2. Copy this config file to ~/.sbuildrc
+# 3. build package
+# sbuild --no-clean -c unstable-amd64 --build amd64 --arch amd64 .
+$chroot_mode = 'unshare';
 
-$chroot_mode = 'schroot';
-$schroot = 'schroot';
+$external_commands = { "build-failed-commands" => [ [ '%SBUILD_SHELL' ] ] };
+
+if ($distribution eq 'unstable') {
+    push @{$extra_repositories}, 'deb http://t490 sid main contrib non-free non-free-firmware';
+}
+
+$build_environment ={
+  "LD_PRELOAD" => "/usr/lib/x86_64-linux-gnu/libeatmydata.so"
+};
 
 $run_lintian = 1;
 $lintian_opts = ['-E', '-v', '-i', '-I'];
 
 $run_autopkgtest = 1;
-$autopkgtest_root_args = '';
-$autopkgtest_opts = ['--', 'schroot', 'unstable-amd64-sbuild'];
+
+#$run_piuparts = 1;
 
 $purge_build_directory = 'always';
 
-# don't remove this, Perl needs it:
-1;

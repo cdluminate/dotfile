@@ -1,11 +1,5 @@
 #!/bin/sh
-if test -z "$(command -v time)"; then
-    echo executable "time" is not installed.
-    exit 1
-fi
 arch="${1}"
 shift
-echo sudo sbuild-update --chroot-mode=schroot -udcar unstable-${arch}-sbuild
-sudo sbuild-update --chroot-mode=schroot -udcar unstable-${arch}-sbuild
-echo time sbuild --no-clean -c unstable-${arch}-sbuild --build=${arch} --arch=${arch} $@
-time sbuild --no-clean -c unstable-${arch}-sbuild --build=${arch} --arch=${arch} $@
+echo sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} $@
+sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} $@
