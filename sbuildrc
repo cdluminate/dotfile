@@ -9,7 +9,11 @@
 # 3. build package
 # sbuild --no-clean -c unstable-amd64 --build amd64 --arch amd64 .
 $chroot_mode = 'unshare';
-$unshare_tmpdir_template = '~/.cache/sbuild/tmp.sbuild.XXXXXXXXXX'
+
+# mkdir -p /nvme/dot-cache/sbuild/tmp
+# chmod 777 /nvme/dot-cache/sbuild/tmp
+#$unshare_tmpdir_template = "$ENV{HOME}/.cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
+$unshare_tmpdir_template = "/nvme/dot-cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
 
 $external_commands = { "build-failed-commands" => [ [ '%SBUILD_SHELL' ] ] };
 
