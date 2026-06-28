@@ -13,7 +13,7 @@ $chroot_mode = 'unshare';
 # mkdir -p /nvme/dot-cache/sbuild/tmp
 # chmod 777 /nvme/dot-cache/sbuild/tmp
 #$unshare_tmpdir_template = "$ENV{HOME}/.cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
-$unshare_tmpdir_template = "/nvme/dot-cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
+#$unshare_tmpdir_template = "/nvme/dot-cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
 
 $external_commands = { "build-failed-commands" => [ [ '%SBUILD_SHELL' ] ] };
 
