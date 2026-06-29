@@ -2,9 +2,18 @@
 # 1. Prepare
 # sudo apt install sbuild mmdebstrap piuparts lintian autopkgtest
 # mkdir -p ~/.cache/sbuild
-# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-amd64.tar.zst http://t490/
-# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-arm64.tar.zst http://t490/
-#
+
+# [amd64]
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-amd64.tar.zst http://t490/ --arch amd64
+
+# [arm64]
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-arm64.tar.zst http://t490/ --arch arm64
+
+# [ports]
+# sudo apt install -y debian-ports-archive-keyring
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-hppa.tar.zst http://ftp.ports.debian.org/debian-ports/ --arch hppa
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-alpha.tar.zst http://ftp.ports.debian.org/debian-ports/ --arch alpha
+
 # 2. Copy this config file to ~/.sbuildrc
 # 3. build package
 # sbuild --no-clean -c unstable-amd64 --build amd64 --arch amd64 .
