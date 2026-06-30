@@ -22,7 +22,9 @@ $chroot_mode = 'unshare';
 # mkdir -p /nvme/dot-cache/sbuild/tmp
 # chmod 777 /nvme/dot-cache/sbuild/tmp
 #$unshare_tmpdir_template = "$ENV{HOME}/.cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
-#$unshare_tmpdir_template = "/nvme/dot-cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
+if (-d "/nvme/dot-cache/sbuild/tmp") {
+    $unshare_tmpdir_template = "/nvme/dot-cache/sbuild/tmp/tmp.sbuild.XXXXXXXXXX";
+}
 
 $external_commands = { "build-failed-commands" => [ [ '%SBUILD_SHELL' ] ] };
 
@@ -30,10 +32,19 @@ if ($distribution eq 'unstable') {
     push @{$extra_repositories}, 'deb http://t490 sid main contrib non-free non-free-firmware';
 }
 
-$build_environment ={
-  "LD_PRELOAD" => "/usr/lib/x86_64-linux-gnu/libeatmydata.so"
-#  "LD_PRELOAD" => "/usr/lib/aarch64-linux-gnu/libeatmydata.so"
-};
+if ($host_arch eq 'amd64') {
+    $build_environment ={
+      "LD_PRELOAD" => "/usr/lib/x86_64-linux-gnu/libeatmydata.so"
+    };
+} elsif ($host_arch eq 'arm64') {
+    $build_environment ={
+      "LD_PRELOAD" => "/usr/lib/aarch64-linux-gnu/libeatmydata.so"
+    };
+} elsif ($host_arch eq 'hppa') {
+    $build_environment ={
+      "LD_PRELOAD" => "/usr/lib/hppa-linux-gnu/libeatmydata.so"
+    };
+}
 
 $run_lintian = 1;
 $lintian_opts = ['-E', '-v', '-i', '-I'];
