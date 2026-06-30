@@ -11,8 +11,8 @@
 
 # [ports]
 # sudo apt install -y debian-ports-archive-keyring
-# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-hppa.tar.zst http://ftp.ports.debian.org/debian-ports/ --arch hppa
-# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-alpha.tar.zst http://ftp.ports.debian.org/debian-ports/ --arch alpha
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-hppa.tar.zst http://ftp.ports.debian.org/debian-ports/ --arch hppa --include debian-ports-archive-keyring
+# mmdebstrap --include=ca-certificates --skip=output/dev --variant=buildd --include=eatmydata unstable ~/.cache/sbuild/unstable-alpha.tar.zst http://ftp.ports.debian.org/debian-ports/ --arch alpha --include debian-ports-archive-keyring
 
 # 2. Copy this config file to ~/.sbuildrc
 # 3. build package
