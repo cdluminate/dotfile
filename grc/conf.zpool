@@ -1,0 +1,195 @@
+# GRC configuration for zpool commands
+# Intended for colouring output of:
+#   zpool list
+#   zpool list -v
+#   zpool status
+#   zpool status -v
+
+# ===========================================================
+# zpool list headers
+# ===========================================================
+
+# Header line for zpool list
+regexp=^NAME\s+(SIZE\s+ALLOC\s+FREE|STATE).*$
+colours=bold white
+count=stop
+======
+# Header line for zpool status config section
+regexp=^\tNAME\s+STATE\s+READ\s+WRITE\s+CKSUM\s*$
+colours=bold white
+count=stop
+======
+
+# ===========================================================
+# Health / State values
+# ===========================================================
+
+# ONLINE state — healthy
+regexp=\bONLINE\b
+colours=bold green
+======
+# DEGRADED state — warning
+regexp=\bDEGRADED\b
+colours=bold yellow
+======
+# FAULTED state — critical
+regexp=\bFAULTED\b
+colours=bold red
+======
+# OFFLINE state
+regexp=\bOFFLINE\b
+colours=bright_black
+======
+# UNAVAIL state — critical
+regexp=\bUNAVAIL\b
+colours=bold red
+======
+# REMOVED state
+regexp=\bREMOVED\b
+colours=bold magenta
+======
+
+# ===========================================================
+# zpool status: error counters
+# ===========================================================
+
+# Non-zero error counts in READ/WRITE/CKSUM columns
+regexp=\s([1-9]\d*)\s
+colours=unchanged,bold red
+======
+# "No known data errors" — good
+regexp=No known data errors
+colours=bold green
+======
+# "with N errors" in scan line (non-zero)
+regexp=with (\d+ errors)
+colours=unchanged,bold red
+======
+# "with 0 errors" in scan line — override back to green
+regexp=with (0 errors)
+colours=unchanged,bold green
+======
+
+# ===========================================================
+# zpool status: scan details
+# ===========================================================
+
+# scrub/resilver keywords
+regexp=\b(scrub|resilver)\b
+colours=yellow
+======
+# scan timestamp
+regexp=on (.+)$
+colours=unchanged,cyan
+======
+# scan duration HH:MM:SS
+regexp=in (\d+:\d+:\d+)
+colours=unchanged,magenta
+======
+
+# ===========================================================
+# Sizes
+# ===========================================================
+
+# Size: bytes / K range
+regexp=\s(\d+(\.\d+)?[BK]i?)\s
+colours=unchanged,green
+======
+# Size: 0B
+regexp=\s(0B)\s
+colours=unchanged,bright_black
+======
+# Size: M range
+regexp=\s(\d+(\.\d+)?M)\s
+colours=unchanged,yellow
+======
+# Size: G range
+regexp=\s(\d+(\.\d+)?G)\s
+colours=unchanged,red
+======
+# Size: T range
+regexp=\s(\d+(\.\d+)?T)\s
+colours=unchanged,bold red
+======
+
+# ===========================================================
+# Capacity percentage (zpool list CAP column)
+# ===========================================================
+
+# CAP 0-59%
+regexp=\s([1-5]?[0-9](\.\d+)?%)(?=\s)
+colours=unchanged,green
+======
+# CAP 60-79%
+regexp=\s([67][0-9](\.\d+)?%)(?=\s)
+colours=unchanged,yellow
+======
+# CAP 80-89%
+regexp=\s([8][0-9](\.\d+)?%)(?=\s)
+colours=unchanged,red
+======
+# CAP 90-100%
+regexp=\s(9[0-9](\.\d+)?%|100(\.\d+)?%)(?=\s)
+colours=unchanged,bold red
+======
+
+# ===========================================================
+# DEDUP ratio
+# ===========================================================
+regexp=\s(\d+\.\d+x)\s
+colours=unchanged,magenta
+======
+
+# ===========================================================
+# Dash placeholders
+# ===========================================================
+
+# Dash in the middle of a line
+regexp=\s+(-)(?=\s)
+colours=unchanged,bright_black
+======
+# Dash at end of line
+regexp=\s+(-)$
+colours=unchanged,bright_black
+======
+
+# ===========================================================
+# Pool/device names
+# Applied late so they act as a base layer; the more specific
+# rules above (state labels, health, sizes) override these.
+# ===========================================================
+
+# Indented device names (e.g. in zpool list -v or status config)
+regexp=^[\t ]([\t ]*\S+)
+colours=unchanged,blue
+======
+# Pool name at start of line (zpool list, not indented)
+regexp=^([a-zA-Z]\S*)(?=\s)
+colours=bold green
+======
+
+# ===========================================================
+# zpool status key-value labels
+# Applied last so bold cyan overrides the blue device name
+# match on lines like "  pool: luminz"
+# ===========================================================
+
+# pool: label and value
+regexp=^\s+(pool):\s+(\S+)
+colours=unchanged,bold cyan,bold green
+======
+# state: label
+regexp=^\s+(state):\s+
+colours=unchanged,bold cyan
+======
+# scan: label
+regexp=^\s+(scan):\s+
+colours=unchanged,bold cyan
+======
+# config: label
+regexp=^(config):
+colours=bold cyan
+======
+# errors: label
+regexp=^(errors):\s+
+colours=bold cyan

@@ -1,0 +1,49 @@
+# GRC configuration for zfs list / zfs list -tall
+# Intended for colouring output of:
+#   zfs list
+#   zfs list -tall
+
+# Header line
+regexp=^NAME\s+USED\s+AVAIL\s+REFER\s+MOUNTPOINT\s*$
+colours=bold white
+count=stop
+======
+# Snapshot name: dataset@snapshot — dataset in bold green, @snap in cyan
+regexp=^(\S+?)(@\S+)(?=\s)
+colours=unchanged,bold green,cyan
+======
+# Pool/dataset name (lines without @, i.e. not snapshots)
+regexp=^([^\s@]+)(?=\s)
+colours=bold green
+======
+# Size: 0B (zero usage, e.g. snapshots)
+regexp=\s(0B)\s
+colours=unchanged,bright_black
+======
+# Size: bytes / K range
+regexp=\s(\d+(\.\d+)?[BK]i?)\s
+colours=unchanged,green
+======
+# Size: M range
+regexp=\s(\d+(\.\d+)?M)\s
+colours=unchanged,yellow
+======
+# Size: G range
+regexp=\s(\d+(\.\d+)?G)\s
+colours=unchanged,red
+======
+# Size: T range
+regexp=\s(\d+(\.\d+)?T)\s
+colours=unchanged,bold red
+======
+# Mountpoint path
+regexp=(/[-\w\d./]+)$
+colours=blue
+======
+# Dash placeholder (no mountpoint or no avail for snapshots)
+regexp=\s+(-)(?=\s)
+colours=unchanged,bright_black
+======
+# Dash at end of line (mountpoint column)
+regexp=\s+(-)$
+colours=unchanged,bright_black
