@@ -1,5 +1,16 @@
 #!/bin/sh
+
+# parse args
 arch="${1}"
 shift
+
+# check eatmydata
+if test -e /usr/lib/x86_64-linux-gnu/libeatmydata.so; then
+    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libeatmydata.so
+elif test -e /usr/lib/aarch64-linux-gnu/libeatmydata.so; then
+    export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libeatmydata.so
+fi
+
+# do sbuild
 echo sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} $@
 sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} $@
