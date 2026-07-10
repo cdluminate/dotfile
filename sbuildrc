@@ -4,10 +4,10 @@
 # mkdir -p ~/.cache/sbuild
 
 # [amd64]
-# mmdebstrap --skip=output/dev --variant=buildd --arch amd64 --include=ca-certificates,eatmydata unstable ~/.cache/sbuild/unstable-amd64.tar.zst http://t490/ --include=ccache --customize-hook='chroot "$1" update-ccache-symlinks'
+# mmdebstrap --skip=output/dev --variant=buildd --include=ca-certificates,eatmydata --include=ccache --customize-hook='chroot "$1" update-ccache-symlinks' --components=main,contrib,non-free,non-free-firmware --arch amd64 unstable ~/.cache/sbuild/unstable-amd64.tar.zst http://t490/
 
 # [arm64]
-# mmdebstrap --skip=output/dev --variant=buildd --arch arm64 --include=ca-certificates,eatmydata unstable ~/.cache/sbuild/unstable-arm64.tar.zst http://t490/ --include=ccache --customize-hook='chroot "$1" update-ccache-symlinks'
+# mmdebstrap --skip=output/dev --variant=buildd --include=ca-certificates,eatmydata --include=ccache --customize-hook='chroot "$1" update-ccache-symlinks' --components=main,contrib,non-free,non-free-firmware --arch arm64 unstable ~/.cache/sbuild/unstable-arm64.tar.zst http://t490/
 
 # [ports]
 # sudo apt install -y debian-ports-archive-keyring
