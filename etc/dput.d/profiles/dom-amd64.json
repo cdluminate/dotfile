@@ -1,0 +1,9 @@
+{
+    "allow_dcut": true,
+    "meta": "debomatic",
+    "fqdn": "debomatic-amd64.debian.net",
+    "incoming": "/srv/debomatic-amd64",
+    "login": "debomatic",
+    "method": "sftp",
+    "check-debs": { "skip": true }
+}
