@@ -3,9 +3,23 @@
 
 # parse args
 arch="${1}"
-exp="${EXP}"
 mirror="http://t490"
 shift
+
+# scan remaining args for --exp/--experimental, extracting it out of $@
+exp=""
+args=""
+for a in "$@"; do
+    case "${a}" in
+        --exp|--experimental)
+            exp="1"
+            ;;
+        *)
+            args="${args} ${a}"
+            ;;
+    esac
+done
+set -- ${args}
 
 # check eatmydata
 if test -e /usr/lib/x86_64-linux-gnu/libeatmydata.so; then
@@ -14,8 +28,8 @@ elif test -e /usr/lib/aarch64-linux-gnu/libeatmydata.so; then
     export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libeatmydata.so
 fi
 
-# check experimental build flags
-if test -n "${exp}" && test "${exp}" = "buildd" ; then
+if test -n "${exp}"; then
+    # do sbuild with experimental (buildd) enabled
     echo sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} \
         --extra-repository="deb ${mirror} experimental main contrib non-free" \
         --aspcud-criteria '-count(down),-count(changed,APT-Release:=/experimental/),-removed,-changed,-new' \
@@ -23,14 +37,6 @@ if test -n "${exp}" && test "${exp}" = "buildd" ; then
     sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} \
         --extra-repository="deb ${mirror} experimental main contrib non-free" \
         --aspcud-criteria '-count(down),-count(changed,APT-Release:=/experimental/),-removed,-changed,-new' \
-        --build-dep-resolver=aspcud $@
-elif test -n "${exp}"; then
-    # do sbuild with experimental enabled
-    echo sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} \
-        --extra-repository="deb ${mirror} experimental main contrib non-free" \
-        --build-dep-resolver=aspcud $@
-    sbuild --no-clean -c unstable-${arch} --build=${arch} --arch=${arch} \
-        --extra-repository="deb ${mirror} experimental main contrib non-free" \
         --build-dep-resolver=aspcud $@
 else
     # do standard sbuild
