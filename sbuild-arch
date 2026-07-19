@@ -1,9 +1,32 @@
 #!/bin/sh
 # ref: https://wiki.debian.org/sbuild#Enabling_experimental
 
+mirror="http://t490"
+
+# mmdebstrap subcommand: build a chroot tarball for sbuild
+if test "${1}" = "mmdebstrap"; then
+    shift
+    arch="${1:-$(dpkg-architecture -qDEB_HOST_ARCH)}"
+    if test -n "${1}"; then
+        shift
+    fi
+
+    echo mmdebstrap --skip=output/dev --variant=buildd \
+        --include=ca-certificates,eatmydata --include=ccache \
+        --customize-hook='chroot "$1" update-ccache-symlinks' \
+        --components=main,contrib,non-free,non-free-firmware \
+        --arch ${arch} unstable \
+        ~/.cache/sbuild/unstable-${arch}.tar.zst ${mirror}/
+    exec mmdebstrap --skip=output/dev --variant=buildd \
+        --include=ca-certificates,eatmydata --include=ccache \
+        --customize-hook='chroot "$1" update-ccache-symlinks' \
+        --components=main,contrib,non-free,non-free-firmware \
+        --arch ${arch} unstable \
+        ~/.cache/sbuild/unstable-${arch}.tar.zst ${mirror}/
+fi
+
 # parse args
 arch="${1}"
-mirror="http://t490"
 shift
 
 # scan remaining args for --exp/--experimental, extracting it out of $@
