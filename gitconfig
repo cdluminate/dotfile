@@ -1,10 +1,6 @@
 [core]
-	pager = /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less --tabs=4 -RFX
 	editor = vim
 	quotepath = false
-[pager]
-	branch = /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less --tabs=4 -RFX
-	tag = /usr/share/doc/git/contrib/diff-highlight/diff-highlight | less --tabs=4 -RFX
 [user]
 	name = Mo Zhou
 	email = cdluminate@gmail.com
@@ -28,17 +24,5 @@
 	required = true
 [color]
 	ui = true
-[color "diff-highlight"]
-	oldNormal = red bold
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
-[color "diff"]
-	meta = yellow
-	frag = magenta bold
-	commit = yellow bold
-	old = red bold
-	new = green bold
-	whitespace = red reverse
 [credential]
-	helper = cache --timeout=3600
+	helper = cache --timeout=1800
