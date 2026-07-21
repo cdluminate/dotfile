@@ -1,0 +1,45 @@
+\documentclass[letterpaper,twoside]{article}
+\usepackage[margin=0in]{geometry}
+\usepackage{tikz}
+\pagestyle{empty}
+
+\begin{document}
+
+% Page 1 (Front)
+\begin{tikzpicture}[remember picture, overlay]
+    % Colors typical for notebook paper
+    \definecolor{rulecolor}{RGB}{130, 180, 220} % Light blue
+    \definecolor{margincolor}{RGB}{240, 120, 120} % Light pink/red
+    
+    % Draw horizontal lines (Narrow ruled: 1/4 inch or 0.25in spacing)
+    % Starting from the bottom at 0.5in, going up to 9.75in 
+    % (This leaves a 1.25in top header margin on 11in tall paper)
+    \foreach \y in {0.5, 0.75, ..., 9.75} {
+        \draw[rulecolor, thin] ([yshift=\y in]current page.south west) -- ([yshift=\y in]current page.south east);
+    }
+    
+    % Draw vertical left margin line
+    % Typical margin is 1.25in from the left edge
+    \draw[margincolor, thick] ([xshift=1.25in]current page.north west) -- ([xshift=1.25in]current page.south west);
+\end{tikzpicture}
+
+\newpage
+
+% Page 2 (Back)
+\begin{tikzpicture}[remember picture, overlay]
+    % Colors typical for notebook paper
+    \definecolor{rulecolor}{RGB}{130, 180, 220} % Light blue
+    \definecolor{margincolor}{RGB}{240, 120, 120} % Light pink/red
+    
+    % Draw horizontal lines (Narrow ruled: 1/4 inch or 0.25in spacing)
+    \foreach \y in {0.5, 0.75, ..., 9.75} {
+        \draw[rulecolor, thin] ([yshift=\y in]current page.south west) -- ([yshift=\y in]current page.south east);
+    }
+    
+    % Draw vertical right margin line
+    % To align with the front margin line when printed double-sided and flipped,
+    % this margin is drawn 1.25in from the right edge.
+    \draw[margincolor, thick] ([xshift=-1.25in]current page.north east) -- ([xshift=-1.25in]current page.south east);
+\end{tikzpicture}
+
+\end{document}
