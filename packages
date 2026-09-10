@@ -3,6 +3,9 @@ use strict;
 use warnings;
 
 my @packages = qw(
+jq
+miller
+visidata
 alacritty
 arandr
 aria2
