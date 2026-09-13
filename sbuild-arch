@@ -45,9 +45,9 @@ done
 set -- ${args}
 
 # check eatmydata
-if test -e /usr/lib/x86_64-linux-gnu/libeatmydata.so; then
+if test -e /usr/lib/x86_64-linux-gnu/libeatmydata.so && [ "amd64" = "${arch}" ]; then
     export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libeatmydata.so
-elif test -e /usr/lib/aarch64-linux-gnu/libeatmydata.so; then
+elif test -e /usr/lib/aarch64-linux-gnu/libeatmydata.so && [ "arm64" = "${arch}" ]; then
     export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libeatmydata.so
 fi
 
